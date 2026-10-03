@@ -99,6 +99,7 @@ This repo is the source of truth that agents read. The human-readable mirror is 
 
 - **The user (Marketing Specialist)** sets goals and gives final approval. Nothing is published or sent without an explicit "aprobado".
 - **Main Claude session = orchestrator.** Reads the brief, picks the segment agent by *who the piece is for*, chains the transversal agents, returns one package.
+- **General newsletter (full subscriber list):** drafted directly by the orchestrator from `00-sources/` material — never assigned to a segment agent by default. Always goes through `brand-reviewer` before reaching the user.
 - **Segment agents (write):** `existing-customers`, `dtg-dtf-acquisition`, `sublimation-direct-fabric`, `distributor-partners` (core, weekly); `neotextil-designers`, `neocatalog-teams` (secondary, monthly).
 - **Transversal agents (support):** `strategist` (plans, calendars, launches, trade shows), `brand-reviewer` (mandatory gate before anything reaches the user), `localizer` (language/market adaptation), `analyst` (results vs. the five KPIs).
 - Agents write copy and visual briefs only. Final visuals → Claude Design or Canva; video → Descript.
@@ -118,7 +119,7 @@ Objective · Audience (segment + print technology) · Product/topic · Channel &
 
 ### Closing block — every agent delivery ends with
 
-- **Entregado:** what is attached.
+- **Entregado:** what is attached, plus which `00-sources/` files (if any) were used as grounding — or "CLAUDE.md only" if none.
 - **Supuestos:** decisions made without confirmation.
 - **Preguntas abiertas:** what is needed from the user.
 - **Siguiente paso propuesto:** which agent acts next.
@@ -190,6 +191,7 @@ Do not introduce new vanity metrics (followers, opens, impressions) as primary s
 ## Folder Map — Where Things Live
 
 - `00-strategy/` — the plan itself, the daily cadence, the live scoreboard, and `decision-log.md` (the learning-loop record — see "Learning loop" above). Read-only for most agents; only update the scoreboard/log when explicitly asked or via `/aprende`.
+- `00-sources/` — general source material (brochures, flyers, release notes) that feeds the general subscriber newsletter and other cross-segment pieces. Drafted by the orchestrator directly, not routed to a segment agent. See `00-sources/README.md`.
 - `01-existing-customers/` `02-dtg-dtf/` `03-distributors/` — segment-specific work in progress (briefs → drafts → sent/published).
 - `04-social/` — cross-segment social content calendar, fed by what's shipping elsewhere.
 - `05-tutorials/` — customer-facing tutorial backlog and scripts, fed by Sales questions.
@@ -208,3 +210,4 @@ Do not introduce new vanity metrics (followers, opens, impressions) as primary s
 3. Only move finished, reviewed work into `outputs/`.
 4. If a task touches visual design (graphics, one-pagers, thumbnails), produce the *copy and content brief* here, and note clearly that the next step is Claude Design — don't attempt to generate finished visual assets as code.
 5. Flag anything uncertain rather than inventing it. A flagged gap is useful; a confident wrong number is not.
+6. Before drafting any piece, check `00-sources/` for relevant brochures, flyers, or release notes. Use only data that appears there or in this file (`CLAUDE.md`) — never invent beyond those two sources. State in the closing block which `00-sources/` files were used.

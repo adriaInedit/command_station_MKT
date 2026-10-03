@@ -18,3 +18,5 @@ Rules born from the user's corrections. Every agent follows them. Added via `/ap
 | 2026-10 | S3RTEC added as partner-generated DTF case (Hanrun calibration); use in co-marketing pitches | dtg-dtf-acquisition, distributor-partners | User |
 | 2026-10 | Optimum Digital USA added as carpet-printing OEM case; carpet is an application inside the direct-to-fabric segment | sublimation-direct-fabric, distributor-partners | User |
 | 2026-10 | Repositorio único: `inedit-os-pack`. `inedit-marketing` archivado como `inedit-marketing-ARCHIVO` (solo respaldo histórico, no se vuelve a tocar) | All | User decision |
+| 2026-10 | La newsletter general (toda la lista de suscriptores) la redacta el orquestador desde `00-sources/`; no se asigna por defecto a ningún agente de segmento. Pasa siempre por `brand-reviewer` | Orchestrator, existing-customers | User correction |
+| 2026-10 | Antes de redactar cualquier pieza, revisar `00-sources/` y usar solo datos que aparezcan ahí o en `CLAUDE.md`; el closing block indica qué archivos de `00-sources/` se usaron | All | User decision |
