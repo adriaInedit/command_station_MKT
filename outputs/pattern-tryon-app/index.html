@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pattern Try-On</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0d0d0d; color: #d4d4d4;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 0 20px; height: 46px;
+      background: #161616; border-bottom: 1px solid #242424; flex-shrink: 0;
+    }
+    header h1 { font-size: 14px; font-weight: 600; color: #fff; }
+    header p  { font-size: 12px; color: #4a4a4a; }
+
+    /* ── Layout ── */
+    .workspace { display: flex; flex: 1; overflow: hidden; gap: 1px; background: #1e1e1e; }
+    .panel { background: #0d0d0d; display: flex; flex-direction: column; overflow: hidden; flex: 1 1 50%; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px; height: 34px;
+      background: #161616; border-bottom: 1px solid #1e1e1e; flex-shrink: 0;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #484848;
+    }
+
+    .bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; background: #111; border-bottom: 1px solid #1a1a1a;
+      flex-shrink: 0; flex-wrap: wrap; min-height: 38px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 4px 10px; border: none; border-radius: 4px;
+      font-size: 11px; font-weight: 500; cursor: pointer;
+      transition: filter 0.15s, opacity 0.15s; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn:hover:not(:disabled) { filter: brightness(1.2); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-ghost  { background: #1e1e1e; color: #777; border: 1px solid #282828; }
+    .btn-active { background: #FE5000; color: #fff; }
+    .btn-red    { background: #2a1515; color: #c96060; border: 1px solid #3a1e1e; }
+    .btn-apply  { background: #FE5000; color: #fff; padding: 7px 18px; font-size: 13px; }
+    .btn-dl     { background: #1a2e1a; color: #6db86d; border: 1px solid #253e25; }
+
+    /* ── Inputs ── */
+    .lbl { font-size: 11px; color: #484848; white-space: nowrap; }
+    input[type="range"] {
+      -webkit-appearance: none; width: 68px; height: 3px;
+      background: #252525; border-radius: 2px; outline: none; flex-shrink: 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 11px; height: 11px;
+      background: #0072CE; border-radius: 50%; cursor: pointer;
+    }
+    .range-val { font-size: 11px; color: #484848; min-width: 30px; }
+    select {
+      background: #1a1a1a; color: #aaa; border: 1px solid #2a2a2a;
+      border-radius: 4px; padding: 3px 6px; font-size: 11px; outline: none; cursor: pointer;
+    }
+    .divider { width: 1px; height: 16px; background: #222; flex-shrink: 0; }
+
+    /* ── Zoom controls ── */
+    .zoom-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .zoom-btn {
+      width: 18px; height: 18px; border: 1px solid #2a2a2a; border-radius: 3px;
+      background: #1a1a1a; color: #888; font-size: 14px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: filter 0.15s; padding: 0; flex-shrink: 0;
+    }
+    .zoom-btn:hover { filter: brightness(1.5); }
+    .zoom-val { font-size: 10px; color: #484848; min-width: 32px; text-align: center; }
+
+    /* ── Canvas ── */
+    .canvas-area {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; background: #090909;
+    }
+    .canvas-wrapper { position: relative; display: none; }
+    #photo-canvas { display: block; }
+    #mask-canvas  { position: absolute; top: 0; left: 0; cursor: crosshair; }
+
+    /* ── Drop zone ── */
+    #photo-drop {
+      position: absolute; inset: 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; border: 1.5px dashed #1e1e1e; border-radius: 10px;
+      color: #2a2a2a; cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    #photo-drop:hover, #photo-drop.over {
+      border-color: #0072CE; background: rgba(0,114,206,0.04); color: #0072CE;
+    }
+    #photo-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    #photo-drop svg   { width: 32px; height: 32px; }
+    #photo-drop p     { font-size: 13px; }
+    #photo-drop small { font-size: 11px; color: #333; }
+
+    /* ── Detection status ── */
+    #detect-badge { display: none; align-items: center; gap: 5px; font-size: 11px; color: #484848; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .spin {
+      width: 10px; height: 10px; border: 2px solid #2a2a2a; border-top-color: #0072CE;
+      border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+    .ok  { background: #509E2F; }
+    .err { background: #c96060; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Pattern thumb ── */
+    #pattern-thumb {
+      width: 36px; height: 36px; border-radius: 3px; object-fit: cover;
+      border: 1px solid #252525; display: none; flex-shrink: 0;
+    }
+    .upload-wrap { position: relative; overflow: hidden; flex-shrink: 0; }
+    .upload-wrap input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+    /* ── Segment chips ── */
+    .seg-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px 3px 5px; border-radius: 20px; border: 1px solid transparent;
+      font-size: 11px; font-weight: 500; cursor: pointer;
+      transition: opacity 0.15s, filter 0.15s, border-color 0.2s; user-select: none;
+      background: #1a1a1a; color: #ccc; position: relative;
+    }
+    .seg-chip:hover  { filter: brightness(1.2); }
+    .seg-chip.off    { opacity: 0.3; }
+    .seg-chip.drag-over { border-color: #0072CE !important; background: rgba(0,114,206,0.08); }
+    .seg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chip-pat {
+      width: 14px; height: 14px; border-radius: 2px; object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0;
+    }
+
+    /* ── Colorway swatches ── */
+    .cw-swatch-wrap { position: relative; width: 22px; height: 22px; flex-shrink: 0; }
+    .cw-swatch {
+      width: 22px; height: 22px; border-radius: 4px; border: 1.5px solid #333;
+      cursor: pointer; transition: transform 0.1s, border-color 0.15s; display: block;
+    }
+    .cw-swatch:hover { transform: scale(1.15); border-color: #555; }
+    .cw-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    #colorway-bar { display: none; }
+    .cw-btn {
+      padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 500;
+      cursor: pointer; border: 1px solid #2a2a2a; background: #1a1a1a; color: #666;
+      transition: filter 0.15s;
+    }
+    .cw-btn:hover { filter: brightness(1.3); }
+    .cost-badge {
+      font-size: 10px; padding: 2px 7px; border-radius: 10px;
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #555; white-space: nowrap;
+    }
+
+    /* ── Result ── */
+    .result-wrap {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #090909;
+    }
+    #result-img { max-width: 100%; max-height: 100%; object-fit: contain; display: none; }
+    .empty-ph { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #222; pointer-events: none; }
+    .empty-ph svg { width: 40px; height: 40px; }
+    .empty-ph p   { font-size: 13px; }
+    .apply-spin {
+      display: none; width: 14px; height: 14px;
+      border: 2px solid #1e1e1e; border-top-color: #0072CE;
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    #apply-status { font-size: 12px; color: #484848; }
+
+    /* ── Main result canvas area ── */
+    .main-result-area {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative; min-height: 0;
+    }
+
+    /* ── Collection strip ── */
+    .collection-strip {
+      display: flex; gap: 6px; padding: 8px 12px;
+      background: #0a0a0a; border-top: 1px solid #1a1a1a;
+      flex-shrink: 0; overflow-x: auto; min-height: 98px;
+    }
+    .coll-slot {
+      flex-shrink: 0; width: 80px; display: flex; flex-direction: column;
+      align-items: center; gap: 4px; position: relative;
+    }
+    .coll-photo {
+      width: 80px; height: 64px; border-radius: 4px; object-fit: cover;
+      border: 1px solid #252525; display: block;
+    }
+    .coll-add {
+      width: 80px; height: 64px; border: 1.5px dashed #222; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      color: #333; font-size: 20px; font-weight: 300; transition: border-color 0.2s, color 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .coll-add:hover { border-color: #0072CE; color: #0072CE; }
+    .coll-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .coll-result-wrap { position: relative; }
+    .coll-result {
+      width: 80px; height: 64px; border-radius: 4px; object-fit: cover;
+      border: 1px solid #252525; display: none;
+    }
+    .coll-apply-btn {
+      font-size: 9px; padding: 2px 6px; border-radius: 3px; border: 1px solid #2a2a2a;
+      background: #1a1a1a; color: #555; cursor: pointer; width: 100%;
+      transition: filter 0.15s; white-space: nowrap;
+    }
+    .coll-apply-btn:hover:not(:disabled) { filter: brightness(1.3); }
+    .coll-apply-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .coll-dl-btn {
+      font-size: 9px; padding: 2px 6px; border-radius: 3px; border: 1px solid #253e25;
+      background: #1a2e1a; color: #6db86d; cursor: pointer; width: 100%;
+      transition: filter 0.15s; display: none;
+    }
+    .coll-dl-btn:hover { filter: brightness(1.2); }
+    .coll-spin {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: #0072CE; border-radius: 50%; animation: spin .7s linear infinite; display: none;
+    }
+    .strip-label { font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; flex-shrink: 0; align-self: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Pattern Try-On</h1>
+  <p>Upload a photo · detect clothing · apply pattern · build a collection</p>
+</header>
+
+<div class="workspace">
+
+  <!-- ══ LEFT: Photo & Segments ══ -->
+  <div class="panel">
+    <div class="section-header">
+      <span>1 · Photo</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomLeft(-0.25)">−</button>
+          <span class="zoom-val" id="left-zoom-val">100%</span>
+          <button class="zoom-btn" onclick="zoomLeft(0.25)">+</button>
+        </div>
+        <div id="detect-badge">
+          <div class="spin" id="detect-icon"></div>
+          <span id="detect-label">Detecting…</span>
+        </div>
+        <div class="upload-wrap">
+          <button class="btn btn-ghost">Change photo</button>
+          <input type="file" id="model-upload" accept="image/*">
+        </div>
+      </div>
+    </div>
+
+    <div class="bar" id="seg-bar">
+      <span class="lbl">Segments:</span>
+      <div id="seg-chips" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+      <div class="divider" style="margin-left:auto;"></div>
+      <button class="btn btn-active" id="btn-paint" onclick="setTool('paint')">Paint</button>
+      <button class="btn btn-ghost" id="btn-erase" onclick="setTool('erase')">Erase</button>
+      <span class="lbl" style="margin-left:4px;">Size</span>
+      <input type="range" id="brush-size" min="4" max="100" value="28">
+      <button class="btn btn-red" onclick="clearMask()">Clear</button>
+      <button class="btn btn-ghost" id="redetect-btn" onclick="runSegment()" style="display:none">Re-detect</button>
+    </div>
+    <div class="bar" style="padding:4px 12px; min-height:auto;">
+      <span style="font-size:10px;color:#333;">Drag a pattern image onto any chip to assign it a different pattern</span>
+    </div>
+
+    <div class="canvas-area" id="canvas-area">
+      <div id="photo-drop">
+        <input type="file" id="drop-input" accept="image/*">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"></path>
+        </svg>
+        <p>Drop a photo or click to browse</p>
+        <small>JPG · PNG · WebP</small>
+      </div>
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="photo-canvas"></canvas>
+        <canvas id="mask-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT: Pattern Controls + Result + Collection ══ -->
+  <div class="panel">
+    <div class="section-header">
+      <span>2 · Pattern &amp; Result</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomRight(-0.25)">−</button>
+        <span class="zoom-val" id="right-zoom-val">100%</span>
+        <button class="zoom-btn" onclick="zoomRight(0.25)">+</button>
+      </div>
+    </div>
+
+    <!-- Pattern upload + tile/rotate/repeat -->
+    <div class="bar">
+      <div class="upload-wrap">
+        <button class="btn btn-ghost">Upload pattern</button>
+        <input type="file" id="pattern-upload" accept="image/*">
+      </div>
+      <img id="pattern-thumb">
+      <div class="divider"></div>
+      <span class="lbl">Tile</span>
+      <input type="range" id="pattern-scale" min="10" max="400" value="100">
+      <span class="range-val" id="scale-val">100%</span>
+      <div class="divider"></div>
+      <span class="lbl">Rotate</span>
+      <input type="range" id="pattern-angle" min="0" max="359" value="0">
+      <span class="range-val" id="angle-val">0°</span>
+      <div class="divider"></div>
+      <span class="lbl">Repeat</span>
+      <select id="repeat-type">
+        <option value="flat">Flat</option>
+        <option value="half-drop">Half-drop</option>
+        <option value="brick">Brick</option>
+        <option value="mirror">Mirror</option>
+      </select>
+      <div class="divider"></div>
+      <span class="lbl">Placement</span>
+      <select id="placement">
+        <option value="repeat">Repeat</option>
+        <option value="centered">Centered (1×)</option>
+      </select>
+    </div>
+
+    <!-- Structure + material -->
+    <div class="bar">
+      <span class="lbl" title="Maps garment shadows, seams and folds onto the pattern.">Structure</span>
+      <input type="range" id="depth" min="0" max="100" value="0">
+      <span class="range-val" id="depth-val">0%</span>
+    </div>
+
+    <!-- Colorway -->
+    <div class="bar" id="colorway-bar">
+      <span class="lbl">Colorway</span>
+      <div id="cw-swatches" style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;"></div>
+      <button class="cw-btn" onclick="resetColorway()">Reset</button>
+      <div class="divider"></div>
+      <span id="cost-badge" class="cost-badge" style="display:none;"></span>
+      <span id="cw-status" style="font-size:11px;color:#484848;"></span>
+    </div>
+
+    <!-- Apply -->
+    <div class="bar">
+      <button class="btn btn-apply" id="apply-btn" onclick="applyPattern()">Apply Pattern</button>
+      <button class="btn btn-dl" id="dl-btn" onclick="downloadResult()" style="display:none">Download</button>
+      <div class="apply-spin" id="apply-spin"></div>
+      <span id="apply-status"></span>
+    </div>
+
+    <!-- Result + Collection -->
+    <div class="result-wrap">
+      <!-- Main result -->
+      <div class="main-result-area">
+        <div class="empty-ph" id="result-ph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <path d="M21 15l-5-5L5 21"></path>
+          </svg>
+          <p>Result will appear here</p>
+        </div>
+        <img id="result-img">
+      </div>
+
+      <!-- Collection strip -->
+      <div class="collection-strip" id="coll-strip">
+        <span class="strip-label">Collection</span>
+        <div class="coll-slot" id="coll-0">
+          <div class="coll-add" id="coll-add-0">+<input type="file" accept="image/*" onchange="addCollectionPhoto(0,this.files[0])"></div>
+          <button class="coll-apply-btn" disabled="" onclick="applyToCollection(0)">Apply</button>
+          <button class="coll-dl-btn" id="coll-dl-0" onclick="downloadCollection(0)">Save</button>
+        </div>
+        <div class="coll-slot" id="coll-1">
+          <div class="coll-add" id="coll-add-1">+<input type="file" accept="image/*" onchange="addCollectionPhoto(1,this.files[0])"></div>
+          <button class="coll-apply-btn" disabled="" onclick="applyToCollection(1)">Apply</button>
+          <button class="coll-dl-btn" id="coll-dl-1" onclick="downloadCollection(1)">Save</button>
+        </div>
+        <div class="coll-slot" id="coll-2">
+          <div class="coll-add" id="coll-add-2">+<input type="file" accept="image/*" onchange="addCollectionPhoto(2,this.files[0])"></div>
+          <button class="coll-apply-btn" disabled="" onclick="applyToCollection(2)">Apply</button>
+          <button class="coll-dl-btn" id="coll-dl-2" onclick="downloadCollection(2)">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Zoom ───────────────────────────────────────────────────────────────────
+  let leftZoom = 1, rightZoom = 1;
+
+  function applyLeftZoom() {
+    document.getElementById('canvas-wrapper').style.transform = `scale(${leftZoom})`;
+    document.getElementById('left-zoom-val').textContent = Math.round(leftZoom * 100) + '%';
+  }
+  function applyRightZoom() {
+    const img = document.getElementById('result-img');
+    img.style.transform = `scale(${rightZoom})`;
+    img.style.transformOrigin = 'center center';
+    document.getElementById('right-zoom-val').textContent = Math.round(rightZoom * 100) + '%';
+  }
+  function zoomLeft(delta) {
+    leftZoom = Math.max(0.25, Math.min(8, leftZoom + delta));
+    applyLeftZoom();
+  }
+  function zoomRight(delta) {
+    rightZoom = Math.max(0.25, Math.min(8, rightZoom + delta));
+    applyRightZoom();
+  }
+
+  document.getElementById('canvas-area').addEventListener('wheel', e => {
+    e.preventDefault();
+    zoomLeft(e.deltaY < 0 ? 0.25 : -0.25);
+  }, { passive: false });
+  document.querySelector('.main-result-area').addEventListener('wheel', e => {
+    e.preventDefault();
+    zoomRight(e.deltaY < 0 ? 0.25 : -0.25);
+  }, { passive: false });
+
+  // ── Equal image area heights ────────────────────────────────────────────────
+  function equalizeImageAreas() {
+    const leftArea  = document.getElementById('canvas-area');
+    const rightArea = document.querySelector('.main-result-area');
+    leftArea.style.flex = '1'; leftArea.style.height = '';
+    rightArea.style.flex = '1'; rightArea.style.height = '';
+    requestAnimationFrame(() => {
+      const h = Math.min(leftArea.offsetHeight, rightArea.offsetHeight);
+      leftArea.style.flex = 'none'; leftArea.style.height = h + 'px';
+      rightArea.style.flex = 'none'; rightArea.style.height = h + 'px';
+    });
+  }
+  window.addEventListener('resize', equalizeImageAreas);
+  window.addEventListener('load', () => setTimeout(equalizeImageAreas, 50));
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let modelFile       = null;
+  let patternFile     = null;
+  let currentTool     = 'paint';
+  let painting        = false;
+  let resultUrl       = null;
+  let segments        = [];
+  let originalPalette = [];
+  let cwPalette       = [];
+  const N_COLL = 3;
+  let collFiles   = new Array(N_COLL).fill(null);
+  let collResults = new Array(N_COLL).fill(null);
+
+  const photoCanvas = document.getElementById('photo-canvas');
+  const maskCanvas  = document.getElementById('mask-canvas');
+  const pCtx = photoCanvas.getContext('2d');
+  const mCtx = maskCanvas.getContext('2d', { willReadFrequently: true });
+
+  // ── Photo upload ──────────────────────────────────────────────────────────
+  function handleModelFile(file) {
+    if (!file) return;
+    modelFile = file;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const area  = document.getElementById('canvas-area');
+      const pad   = 32;
+      const scale = Math.min((area.clientWidth - pad) / img.width, (area.clientHeight - pad) / img.height, 1);
+      const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+      photoCanvas.width = w; photoCanvas.height = h;
+      maskCanvas.width  = w; maskCanvas.height  = h;
+      pCtx.drawImage(img, 0, 0, w, h);
+      mCtx.clearRect(0, 0, w, h);
+      segments = [];
+      document.getElementById('seg-chips').innerHTML = '';
+      document.getElementById('photo-drop').style.display     = 'none';
+      document.getElementById('canvas-wrapper').style.display = 'inline-block';
+      document.getElementById('redetect-btn').style.display   = 'inline-block';
+      URL.revokeObjectURL(url);
+      runSegment();
+    };
+    img.src = url;
+  }
+
+  document.getElementById('model-upload').addEventListener('change', e => handleModelFile(e.target.files[0]));
+  document.getElementById('drop-input') .addEventListener('change', e => handleModelFile(e.target.files[0]));
+  const dropZone = document.getElementById('photo-drop');
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); handleModelFile(e.dataTransfer.files[0]); });
+
+  // ── Pattern upload ────────────────────────────────────────────────────────
+  document.getElementById('pattern-upload').addEventListener('change', async function(e) {
+    patternFile = e.target.files[0];
+    if (!patternFile) return;
+    const thumb = document.getElementById('pattern-thumb');
+    thumb.src = URL.createObjectURL(patternFile);
+    thumb.style.display = 'block';
+    await extractPalette();
+  });
+
+  // ── Sliders ───────────────────────────────────────────────────────────────
+  document.getElementById('pattern-scale').addEventListener('input', function() { document.getElementById('scale-val').textContent = this.value + '%'; });
+  document.getElementById('pattern-angle').addEventListener('input', function() { document.getElementById('angle-val').textContent = this.value + '°'; });
+  document.getElementById('depth').addEventListener('input', function() { document.getElementById('depth-val').textContent = this.value + '%'; });
+
+  // ── Segmentation ──────────────────────────────────────────────────────────
+  async function runSegment() {
+    if (!modelFile) return;
+    setDetect('loading');
+    const fd = new FormData();
+    fd.append('model_image', modelFile);
+    try {
+      const res  = await fetch('/segment', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (!data.segments || !data.segments.length) { setDetect('error', 'No clothing detected — paint manually'); return; }
+      await loadSegments(data.segments);
+      setDetect('ok', `${segments.length} piece${segments.length !== 1 ? 's' : ''} detected`);
+    } catch (err) { setDetect('error', 'Detection failed — paint manually'); console.error(err); }
+  }
+
+  async function loadSegments(raw) {
+    const loaded = await Promise.all(raw.map(seg => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const tmp = Object.assign(document.createElement('canvas'), { width: maskCanvas.width, height: maskCanvas.height });
+        tmp.getContext('2d').drawImage(img, 0, 0, maskCanvas.width, maskCanvas.height);
+        const id = tmp.getContext('2d').getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+        resolve({ label: seg.label, color: seg.color, imageData: id, selected: true, patternFile: null });
+      };
+      img.src = seg.mask;
+    })));
+    segments = loaded;
+    renderChips();
+    redrawMask();
+  }
+
+  // ── Chip rendering ────────────────────────────────────────────────────────
+  function renderChips() {
+    const container = document.getElementById('seg-chips');
+    container.innerHTML = '';
+    segments.forEach((seg, i) => {
+      const [r, g, b] = seg.color;
+      const hex  = rgbToHex(r, g, b);
+      const chip = document.createElement('div');
+      chip.className = 'seg-chip' + (seg.selected ? '' : ' off');
+      chip.dataset.idx = i;
+
+      const dot  = document.createElement('span');
+      dot.className = 'seg-dot';
+      dot.style.background = hex;
+
+      const lbl = document.createElement('span');
+      lbl.textContent = seg.label;
+
+      chip.appendChild(dot);
+      if (seg.patternFile) {
+        const pt = document.createElement('img');
+        pt.className = 'chip-pat';
+        pt.src = URL.createObjectURL(seg.patternFile);
+        chip.appendChild(pt);
+      }
+      chip.appendChild(lbl);
+
+      chip.addEventListener('click', () => {
+        segments[i].selected = !segments[i].selected;
+        chip.classList.toggle('off', !segments[i].selected);
+        redrawMask();
+      });
+
+      chip.addEventListener('dragover', e => {
+        if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); chip.classList.add('drag-over'); }
+      });
+      chip.addEventListener('dragleave', () => chip.classList.remove('drag-over'));
+      chip.addEventListener('drop', e => {
+        e.preventDefault(); chip.classList.remove('drag-over');
+        const file = [...e.dataTransfer.files].find(f => f.type.startsWith('image/'));
+        if (file) { segments[i].patternFile = file; renderChips(); redrawMask(); }
+      });
+      chip.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        if (segments[i].patternFile) { segments[i].patternFile = null; renderChips(); }
+      });
+
+      container.appendChild(chip);
+    });
+  }
+
+  function redrawMask() {
+    mCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+    for (const seg of segments) {
+      if (!seg.selected) continue;
+      const [r, g, b] = seg.color;
+      const src = seg.imageData;
+      const out = mCtx.createImageData(maskCanvas.width, maskCanvas.height);
+      for (let i = 0; i < src.data.length; i += 4) {
+        const v = src.data[i];
+        out.data[i] = r; out.data[i+1] = g; out.data[i+2] = b; out.data[i+3] = Math.round(v * 0.78);
+      }
+      const tmp = Object.assign(document.createElement('canvas'), { width: maskCanvas.width, height: maskCanvas.height });
+      tmp.getContext('2d').putImageData(out, 0, 0);
+      mCtx.drawImage(tmp, 0, 0);
+    }
+  }
+
+  // ── Paint tools ───────────────────────────────────────────────────────────
+  function setTool(t) {
+    currentTool = t;
+    document.getElementById('btn-paint').className = t === 'paint' ? 'btn btn-active' : 'btn btn-ghost';
+    document.getElementById('btn-erase').className = t === 'erase' ? 'btn btn-active' : 'btn btn-ghost';
+  }
+  function clearMask() {
+    mCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+    segments.forEach(s => s.selected = false);
+    renderChips();
+  }
+  function getXY(e) {
+    const r = maskCanvas.getBoundingClientRect(), s = e.touches ? e.touches[0] : e;
+    return { x: (s.clientX - r.left) / leftZoom, y: (s.clientY - r.top) / leftZoom };
+  }
+  function doPaint(e) {
+    if (!painting) return;
+    const { x, y } = getXY(e);
+    const size = parseInt(document.getElementById('brush-size').value);
+    mCtx.globalCompositeOperation = currentTool === 'erase' ? 'destination-out' : 'source-over';
+    mCtx.globalAlpha = 0.45; mCtx.fillStyle = 'rgba(255,80,0,1)';
+    mCtx.beginPath(); mCtx.arc(x, y, size / 2, 0, Math.PI * 2); mCtx.fill();
+    mCtx.globalAlpha = 1.0; mCtx.globalCompositeOperation = 'source-over';
+  }
+  maskCanvas.addEventListener('mousedown',  e => { painting = true; doPaint(e); });
+  maskCanvas.addEventListener('mousemove',  e => doPaint(e));
+  maskCanvas.addEventListener('mouseup',    () => painting = false);
+  maskCanvas.addEventListener('mouseleave', () => painting = false);
+  maskCanvas.addEventListener('touchstart', e => { e.preventDefault(); painting = true; doPaint(e); }, { passive: false });
+  maskCanvas.addEventListener('touchmove',  e => { e.preventDefault(); doPaint(e); }, { passive: false });
+  maskCanvas.addEventListener('touchend',   () => painting = false);
+
+  // ── Colorway ──────────────────────────────────────────────────────────────
+  async function extractPalette() {
+    if (!patternFile) return;
+    document.getElementById('cw-status').textContent = 'Extracting palette…';
+    const fd = new FormData();
+    fd.append('pattern_image', patternFile);
+    fd.append('n_colors', 6);
+    try {
+      const res  = await fetch('/extract-palette', { method: 'POST', body: fd });
+      const data = await res.json();
+      originalPalette = data.palette;
+      cwPalette       = data.palette.map(c => [...c]);
+      renderSwatches();
+      updatePrintCost();
+      document.getElementById('colorway-bar').style.display = 'flex';
+      document.getElementById('cw-status').textContent = '';
+      equalizeImageAreas();
+    } catch (e) {
+      document.getElementById('cw-status').textContent = 'Palette failed';
+    }
+  }
+
+  function renderSwatches() {
+    const container = document.getElementById('cw-swatches');
+    container.innerHTML = '';
+    cwPalette.forEach(([r, g, b], i) => {
+      const hex  = rgbToHex(r, g, b);
+      const wrap = document.createElement('div');
+      wrap.className = 'cw-swatch-wrap';
+      wrap.title = `Color ${i + 1} — click to change`;
+      const swatch = document.createElement('div');
+      swatch.className = 'cw-swatch';
+      swatch.style.background = hex;
+      const input = document.createElement('input');
+      input.type = 'color'; input.value = hex; input.className = 'cw-input';
+      input.addEventListener('input', function() {
+        cwPalette[i] = hexToRgb(this.value);
+        swatch.style.background = this.value;
+        updatePrintCost();
+      });
+      wrap.appendChild(swatch); wrap.appendChild(input);
+      container.appendChild(wrap);
+    });
+  }
+
+  function updatePrintCost() {
+    const badge = document.getElementById('cost-badge');
+    if (!cwPalette.length) { badge.style.display = 'none'; return; }
+    const n = countEffectiveColors(cwPalette);
+    const label = n <= 2 ? 'Screen-print (spot)' : n <= 4 ? 'Screen-print (multi)' : n <= 6 ? 'Digital' : 'Digital full-color';
+    badge.textContent = `${n} colors · ${label}`;
+    badge.style.display = 'inline';
+  }
+
+  function countEffectiveColors(palette) {
+    const groups = [];
+    for (const c of palette) {
+      if (!groups.some(g => colorDist(g, c) < 22)) groups.push(c);
+    }
+    return groups.length;
+  }
+
+  function resetColorway() {
+    cwPalette = originalPalette.map(c => [...c]);
+    renderSwatches(); updatePrintCost();
+  }
+
+  function buildColorwayParam() {
+    if (!cwPalette.length || !originalPalette.length) return '';
+    const changed = cwPalette.some((c, i) => c[0] !== originalPalette[i][0] || c[1] !== originalPalette[i][1] || c[2] !== originalPalette[i][2]);
+    if (!changed) return '';
+    return JSON.stringify(cwPalette.map((to, i) => [...originalPalette[i], ...to]));
+  }
+
+  // ── Apply pattern ─────────────────────────────────────────────────────────
+  async function applyPattern() {
+    if (!modelFile)   { setApplyStatus('Upload a model photo first.'); return; }
+    if (!patternFile) { setApplyStatus('Upload a pattern first.');     return; }
+    const px = mCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
+    if (![...px].some((v, i) => i % 4 === 3 && v > 0)) {
+      setApplyStatus('No garment selected.'); return;
+    }
+    setApplyLoading(true);
+    try {
+      const hasCustom = segments.some(s => s.selected && s.patternFile);
+      let resultDataUrl;
+      if (hasCustom) {
+        resultDataUrl = await applyMultiSegment();
+      } else {
+        resultDataUrl = await applySingleSegment(modelFile, getCombinedMaskDataUrl(), patternFile, buildColorwayParam());
+      }
+      showMainResult(resultDataUrl);
+    } catch (err) {
+      setApplyStatus('Error: ' + err.message);
+    } finally {
+      setApplyLoading(false);
+    }
+  }
+
+  async function applyMultiSegment() {
+    let currentBlob = modelFile;
+    for (const seg of segments.filter(s => s.selected)) {
+      const pFile = seg.patternFile || patternFile;
+      if (!pFile) continue;
+      const maskUrl = getSegmentMaskDataUrl(seg);
+      const dataUrl = await applySingleSegment(currentBlob, maskUrl, pFile, buildColorwayParam());
+      currentBlob   = dataUrlToBlob(dataUrl);
+    }
+    return URL.createObjectURL(currentBlob);
+  }
+
+  async function applySingleSegment(modelBlob, maskDataUrl, pFile, colorwayParam) {
+    const fd = new FormData();
+    fd.append('model_image',   modelBlob instanceof File ? modelBlob : new File([modelBlob], 'model.png', { type: 'image/png' }));
+    fd.append('pattern_image', pFile);
+    fd.append('mask_data',     maskDataUrl);
+    fd.append('pattern_scale', parseFloat(document.getElementById('pattern-scale').value) / 100);
+    fd.append('pattern_angle', parseInt(document.getElementById('pattern-angle').value));
+    fd.append('depth',         parseInt(document.getElementById('depth').value) / 100);
+    fd.append('material',      document.getElementById('material').value);
+    fd.append('repeat_type',   document.getElementById('repeat-type').value);
+    fd.append('placement',     document.getElementById('placement').value);
+    fd.append('colorway',      colorwayParam || '');
+    const res = await fetch('/apply-pattern', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const { result } = await res.json();
+    return result;
+  }
+
+  function getCombinedMaskDataUrl() {
+    const src  = mCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+    const gray = new ImageData(maskCanvas.width, maskCanvas.height);
+    for (let i = 0; i < src.data.length; i += 4) {
+      const a = src.data[i + 3];
+      gray.data[i] = gray.data[i+1] = gray.data[i+2] = a; gray.data[i+3] = 255;
+    }
+    const tmp = Object.assign(document.createElement('canvas'), { width: maskCanvas.width, height: maskCanvas.height });
+    tmp.getContext('2d').putImageData(gray, 0, 0);
+    return tmp.toDataURL('image/png');
+  }
+
+  function getSegmentMaskDataUrl(seg) {
+    const tmp = Object.assign(document.createElement('canvas'), { width: maskCanvas.width, height: maskCanvas.height });
+    const ctx = tmp.getContext('2d');
+    const src = seg.imageData;
+    const gray = ctx.createImageData(tmp.width, tmp.height);
+    for (let i = 0; i < src.data.length; i += 4) {
+      const v = src.data[i];
+      gray.data[i] = gray.data[i+1] = gray.data[i+2] = v; gray.data[i+3] = 255;
+    }
+    ctx.putImageData(gray, 0, 0);
+    return tmp.toDataURL('image/png');
+  }
+
+  function showMainResult(urlOrDataUrl) {
+    resultUrl = urlOrDataUrl;
+    const img = document.getElementById('result-img');
+    img.src = urlOrDataUrl;
+    img.style.display = 'block';
+    document.getElementById('result-ph').style.display = 'none';
+    document.getElementById('dl-btn').style.display    = 'inline-block';
+    setApplyStatus('Done.');
+  }
+
+  function downloadResult() {
+    if (!resultUrl) return;
+    Object.assign(document.createElement('a'), { href: resultUrl, download: 'pattern-result.png' }).click();
+  }
+
+  // ── Collection ────────────────────────────────────────────────────────────
+  function addCollectionPhoto(idx, file) {
+    if (!file) return;
+    collFiles[idx] = file;
+    collResults[idx] = null;
+
+    const slot  = document.getElementById(`coll-${idx}`);
+    const addEl = document.getElementById(`coll-add-${idx}`);
+    let thumb = slot.querySelector('.coll-photo');
+    if (!thumb) {
+      thumb = document.createElement('img');
+      thumb.className = 'coll-photo';
+      slot.insertBefore(thumb, addEl);
+    }
+    thumb.src = URL.createObjectURL(file);
+    addEl.style.display = 'none';
+
+    const res = slot.querySelector('.coll-result');
+    if (res) res.style.display = 'none';
+    document.getElementById(`coll-dl-${idx}`).style.display = 'none';
+    slot.querySelector('.coll-apply-btn').disabled = false;
+  }
+
+  async function applyToCollection(idx) {
+    if (!collFiles[idx] || !patternFile) return;
+    const slot = document.getElementById(`coll-${idx}`);
+    const btn  = slot.querySelector('.coll-apply-btn');
+
+    let spinner = slot.querySelector('.coll-spin');
+    if (!spinner) {
+      spinner = document.createElement('div');
+      spinner.className = 'coll-spin';
+      const resWrap = document.createElement('div');
+      resWrap.className = 'coll-result-wrap';
+      resWrap.style.position = 'relative';
+      resWrap.appendChild(spinner);
+      slot.insertBefore(resWrap, btn);
+    }
+    spinner.style.display = 'block';
+    btn.disabled = true;
+
+    try {
+      const segFd = new FormData();
+      segFd.append('model_image', collFiles[idx]);
+      const segRes  = await fetch('/segment', { method: 'POST', body: segFd });
+      const segData = await segRes.json();
+
+      let maskDataUrl;
+      if (segData.segments && segData.segments.length > 0) {
+        maskDataUrl = await buildAutoMask(collFiles[idx], segData.segments);
+      } else {
+        maskDataUrl = await buildFullMask(collFiles[idx]);
+      }
+
+      const resultDataUrl = await applySingleSegment(collFiles[idx], maskDataUrl, patternFile, buildColorwayParam());
+      collResults[idx] = resultDataUrl;
+
+      let resImg = slot.querySelector('.coll-result');
+      if (!resImg) {
+        resImg = document.createElement('img');
+        resImg.className = 'coll-result';
+        const resWrap = slot.querySelector('.coll-result-wrap') || slot;
+        resWrap.appendChild(resImg);
+      }
+      resImg.src = resultDataUrl;
+      resImg.style.display = 'block';
+      document.getElementById(`coll-dl-${idx}`).style.display = 'block';
+      setApplyStatus(`Collection ${idx + 1} done.`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      spinner.style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  async function buildAutoMask(photoFile, segs) {
+    const url = URL.createObjectURL(photoFile);
+    const dims = await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => { resolve({ w: img.width, h: img.height }); URL.revokeObjectURL(url); };
+      img.src = url;
+    });
+    const tmp = Object.assign(document.createElement('canvas'), { width: dims.w, height: dims.h });
+    const ctx = tmp.getContext('2d');
+    for (const seg of segs) {
+      const segImg = await loadImage(seg.mask);
+      ctx.drawImage(segImg, 0, 0, dims.w, dims.h);
+    }
+    const imgd = ctx.getImageData(0, 0, dims.w, dims.h);
+    const gray = new ImageData(dims.w, dims.h);
+    for (let i = 0; i < imgd.data.length; i += 4) {
+      const v = imgd.data[i];
+      gray.data[i] = gray.data[i+1] = gray.data[i+2] = v; gray.data[i+3] = 255;
+    }
+    ctx.putImageData(gray, 0, 0);
+    return tmp.toDataURL('image/png');
+  }
+
+  async function buildFullMask(photoFile) {
+    const url = URL.createObjectURL(photoFile);
+    const dims = await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => { resolve({ w: img.width, h: img.height }); URL.revokeObjectURL(url); };
+      img.src = url;
+    });
+    const tmp = Object.assign(document.createElement('canvas'), { width: dims.w, height: dims.h });
+    const ctx = tmp.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, dims.w, dims.h);
+    return tmp.toDataURL('image/png');
+  }
+
+  function loadImage(src) {
+    return new Promise(resolve => { const img = new Image(); img.onload = () => resolve(img); img.src = src; });
+  }
+
+  function downloadCollection(idx) {
+    if (!collResults[idx]) return;
+    Object.assign(document.createElement('a'), { href: collResults[idx], download: `collection-${idx + 1}.png` }).click();
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+  function hexToRgb(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function colorDist(a, b) {
+    return Math.sqrt(a.reduce((s, v, i) => s + (v - b[i]) ** 2, 0));
+  }
+  function dataUrlToBlob(dataUrl) {
+    const [header, data] = dataUrl.split(',');
+    const mime  = header.match(/:(.*?);/)[1];
+    const bytes = atob(data);
+    const arr   = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  function setDetect(state, msg) {
+    const badge = document.getElementById('detect-badge');
+    const icon  = document.getElementById('detect-icon');
+    const label = document.getElementById('detect-label');
+    badge.style.display = 'flex';
+    icon.className = '';
+    if (state === 'loading') { icon.className = 'spin'; label.textContent = 'Detecting…'; }
+    else if (state === 'ok') { icon.className = 'badge-dot ok'; label.textContent = msg || 'Detected'; }
+    else { icon.className = 'badge-dot err'; label.textContent = msg || 'Failed'; }
+  }
+  function setApplyLoading(on) {
+    document.getElementById('apply-spin').style.display = on ? 'block' : 'none';
+    document.getElementById('apply-btn').disabled = on;
+    if (on) setApplyStatus('Applying…');
+  }
+  function setApplyStatus(msg) { document.getElementById('apply-status').textContent = msg; }
+</script>
+
+</body></html>

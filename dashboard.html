@@ -1,0 +1,447 @@
+<title>Inèdit OS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#F5F4F1;
+    --surface:#FFFFFF;
+    --surface-sunken:#EEEDE9;
+    --ink:#1D2024;
+    --ink-muted:#5E6269;
+    --ink-faint:#96989D;
+    --border:#E3E1DC;
+    --border-strong:#CFCCC5;
+    --accent:#FE5000;
+    --accent-ink:#FFFFFF;
+    --gray-chip:#888B8D;
+    --neostampa:#0072CE;
+    --neotextil:#DA291C;
+    --neocatalog:#509E2F;
+    --neomatch:#96989D;
+    --status-good:#1F8F6B;
+    --status-good-bg:#E6F3EE;
+    --status-attention:#AD7A0C;
+    --status-attention-bg:#FBF0DC;
+    --status-idle-bg:#EEEDE9;
+    --shadow: 0 1px 2px rgba(29,32,36,.04), 0 6px 16px -8px rgba(29,32,36,.10);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17181B;
+      --surface:#1F2023;
+      --surface-sunken:#26272B;
+      --ink:#EDEBE7;
+      --ink-muted:#A3A6AC;
+      --ink-faint:#71747A;
+      --border:#33353A;
+      --border-strong:#44474D;
+      --accent:#FF6B2B;
+      --accent-ink:#1A1100;
+      --gray-chip:#9A9DA2;
+      --status-good:#4FBE98;
+      --status-good-bg:#163229;
+      --status-attention:#E0A838;
+      --status-attention-bg:#352A11;
+      --status-idle-bg:#26272B;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17181B;
+    --surface:#1F2023;
+    --surface-sunken:#26272B;
+    --ink:#EDEBE7;
+    --ink-muted:#A3A6AC;
+    --ink-faint:#71747A;
+    --border:#33353A;
+    --border-strong:#44474D;
+    --accent:#FF6B2B;
+    --accent-ink:#1A1100;
+    --gray-chip:#9A9DA2;
+    --status-good:#4FBE98;
+    --status-good-bg:#163229;
+    --status-attention:#E0A838;
+    --status-attention-bg:#352A11;
+    --status-idle-bg:#26272B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    line-height:1.45;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 64px;}
+  h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;text-wrap:balance;margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--surface-sunken);padding:1px 5px;border-radius:4px;font-size:.85em;}
+  a{color:inherit;}
+
+  /* ---------- header ---------- */
+  header.top{
+    position:relative;
+    border-radius:16px;
+    padding:28px 28px 24px;
+    margin-bottom:22px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  header.top::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(45deg, var(--ink) 0 1px, transparent 1px 14px),
+      repeating-linear-gradient(-45deg, var(--ink) 0 1px, transparent 1px 14px);
+    opacity:.035;
+    pointer-events:none;
+  }
+  .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;position:relative;z-index:1;flex-wrap:wrap;}
+  .brandmark{display:flex;align-items:baseline;gap:10px;}
+  .brandmark .e{color:var(--accent);}
+  h1{font-size:28px;font-weight:800;letter-spacing:-.01em;}
+  .tagline{color:var(--ink-muted);font-size:14.5px;margin-top:6px;max-width:48ch;}
+  .meta{text-align:right;font-size:12.5px;color:var(--ink-faint);}
+  .meta .mono{color:var(--ink-muted);}
+  .health{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 10px;border-radius:999px;background:var(--status-good-bg);color:var(--status-good);font-size:12.5px;font-weight:600;}
+  .health::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--status-good);}
+
+  /* ---------- kpi strip ---------- */
+  .section-label{
+    font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);
+    margin:0 0 10px;
+  }
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:26px;}
+  @media (max-width:980px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+  .kpi{
+    background:var(--surface);border:1px dashed var(--border-strong);border-radius:12px;
+    padding:14px 14px 13px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:8px;min-height:108px;
+  }
+  .kpi .label{font-size:12.5px;color:var(--ink-muted);font-weight:500;}
+  .kpi .value{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--status-attention);display:flex;align-items:center;gap:6px;font-weight:500;}
+  .kpi .value::before{content:"ΔE";font-size:10px;border:1px solid var(--status-attention);border-radius:4px;padding:0 3px;opacity:.7;}
+  .kpi .target{font-size:11.5px;color:var(--ink-faint);margin-top:auto;}
+
+  /* ---------- flow ---------- */
+  .flow-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:26px;box-shadow:var(--shadow);}
+  .flow{display:flex;align-items:center;gap:0;overflow-x:auto;padding:6px 0 4px;}
+  .flow-step{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:108px;text-align:center;flex-shrink:0;}
+  .flow-step .dot{width:30px;height:30px;border-radius:50%;background:var(--surface-sunken);border:1.5px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:var(--ink-muted);}
+  .flow-step.gate .dot{background:var(--status-attention-bg);border-color:var(--status-attention);color:var(--status-attention);}
+  .flow-step .t{font-size:12px;font-weight:600;max-width:12ch;}
+  .flow-step .s{font-size:10.5px;color:var(--ink-faint);max-width:13ch;}
+  .flow-arrow{flex:1;height:1.5px;background:var(--border-strong);min-width:20px;margin:0 2px;position:relative;top:-18px;}
+
+  /* ---------- layout grid ---------- */
+  .cols{display:grid;grid-template-columns:1.1fr 1.4fr;gap:20px;align-items:start;}
+  @media (max-width:900px){.cols{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);margin-bottom:20px;}
+  .card h2{font-size:16px;margin-bottom:4px;}
+  .card .sub{font-size:12.5px;color:var(--ink-muted);margin-bottom:14px;}
+
+  /* agents */
+  .agent-group-label{font-size:11px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px;}
+  .agent{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border);}
+  .agent:first-of-type{border-top:none;}
+  .badge{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+  .badge.pending{background:repeating-linear-gradient(45deg, var(--neomatch) 0 3px, transparent 3px 6px);color:var(--ink);border:1px solid var(--border-strong);}
+  .agent .name{font-size:13.5px;font-weight:600;}
+  .agent .path{font-size:11px;color:var(--ink-faint);}
+  .agent .cadence{margin-left:auto;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap;}
+  .cadence.weekly{background:var(--status-good-bg);color:var(--status-good);}
+  .cadence.monthly{background:var(--status-idle-bg);color:var(--ink-muted);}
+  .cadence.support{background:var(--surface-sunken);color:var(--ink-faint);}
+
+  /* commands */
+  .cmd-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+  .cmd{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--surface-sunken);border:1px solid var(--border);border-radius:7px;padding:5px 9px;color:var(--ink);}
+  .cmd b{color:var(--accent);}
+
+  /* pipeline table */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;padding:0 10px 8px 0;}
+  td{padding:9px 10px 9px 0;border-top:1px solid var(--border);vertical-align:middle;}
+  .seg-name{display:flex;align-items:center;gap:8px;font-weight:600;}
+  .seg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .stage-pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:3px 9px;border-radius:999px;font-weight:500;}
+  .stage-pill.active{background:var(--status-good-bg);color:var(--status-good);}
+  .stage-pill.idle{background:var(--status-idle-bg);color:var(--ink-faint);}
+  .count{font-family:'IBM Plex Mono',monospace;color:var(--ink-muted);}
+  .tablewrap{overflow-x:auto;}
+
+  /* outputs + flags */
+  ul.plain{list-style:none;margin:0;padding:0;}
+  .out-item{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;}
+  .out-item:first-child{border-top:none;}
+  .out-item .f{font-weight:500;}
+  .out-item .k{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-faint);white-space:nowrap;}
+
+  .flag{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--border);font-size:13px;align-items:flex-start;}
+  .flag:first-child{border-top:none;}
+  .flag .mark{color:var(--status-attention);font-family:'IBM Plex Mono',monospace;font-size:12px;margin-top:1px;}
+  .flag .txt b{font-weight:600;}
+  .flag .txt span{color:var(--ink-muted);}
+
+  footer{margin-top:8px;font-size:11.5px;color:var(--ink-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--border);padding-top:16px;}
+  footer .legend{display:flex;gap:14px;flex-wrap:wrap;}
+  footer .legend span{display:inline-flex;align-items:center;gap:5px;}
+  footer .legend i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="top-row">
+      <div>
+        <div class="brandmark">
+          <h1>in<span class="e">è</span>dit <span style="color:var(--ink-faint);font-weight:600;">OS</span></h1>
+        </div>
+        <p class="tagline">Panel operativo del sistema de agentes de marketing — segmentos, cadencia, pipeline de contenido y el scoreboard de KPIs, leído directamente de este repositorio.</p>
+        <div class="health">6 agentes de segmento + 4 transversales activos</div>
+      </div>
+      <div class="meta">
+        <div>Fuente: <span class="mono">inedit-os-pack/</span></div>
+        <div>Snapshot generado <span class="mono">2026-10-03</span></div>
+        <div>Protocolo: <span class="mono">brief → orchestrator → brand-reviewer → analyst</span></div>
+      </div>
+    </div>
+  </header>
+
+  <p class="section-label">Scoreboard — 00-strategy/kpi-scoreboard.md</p>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">Trial signups (neoStampa)</div>
+      <div class="value">pendiente baseline</div>
+      <div class="target">objetivo: +30% vs. baseline</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Demos cualificadas</div>
+      <div class="value">pendiente baseline</div>
+      <div class="target">objetivo: +25% vs. baseline</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Upgrade rate (clientes)</div>
+      <div class="value">pendiente baseline</div>
+      <div class="target">objetivo: 20% de la base</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Acuerdos co-marketing</div>
+      <div class="value">pendiente baseline</div>
+      <div class="target">objetivo: +2 nuevos</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Newsletter → trial CTR</div>
+      <div class="value">pendiente baseline</div>
+      <div class="target">objetivo: +15%</div>
+    </div>
+  </div>
+
+  <div class="flow-card">
+    <p class="section-label" style="margin-bottom:14px;">Flujo operativo estándar</p>
+    <div class="flow">
+      <div class="flow-step"><div class="dot">1</div><div class="t">Brief</div><div class="s">/brief</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">2</div><div class="t">Orchestrator</div><div class="s">sesión principal</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">3</div><div class="t">Strategist</div><div class="s">si es campaña</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">4</div><div class="t">Agente de segmento</div><div class="s">redacta</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step gate"><div class="dot">5</div><div class="t">Brand reviewer</div><div class="s">gate obligatorio</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">6</div><div class="t">Tu aprobación</div><div class="s">"aprobado"</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">7</div><div class="t">Localizer</div><div class="s">si aplica</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">8</div><div class="t">Publicación</div><div class="s">tú publicas</div></div>
+      <div class="flow-arrow"></div>
+      <div class="flow-step"><div class="dot">9</div><div class="t">Analyst</div><div class="s">mide vs. KPIs</div></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <!-- LEFT: agents + commands -->
+    <div>
+      <div class="card">
+        <h2>Agentes</h2>
+        <div class="sub">.claude/agents/ — 10 agentes de escritura + 4 transversales</div>
+
+        <div class="agent-group-label">Segmentos core (semanal)</div>
+        <div class="agent">
+          <div class="badge" style="background:var(--neostampa)">EC</div>
+          <div><div class="name">existing-customers</div><div class="path">01-existing-customers/</div></div>
+          <div class="cadence weekly">semanal</div>
+        </div>
+        <div class="agent">
+          <div class="badge" style="background:var(--neostampa)">DT</div>
+          <div><div class="name">dtg-dtf-acquisition</div><div class="path">02-dtg-dtf/</div></div>
+          <div class="cadence weekly">semanal</div>
+        </div>
+        <div class="agent">
+          <div class="badge" style="background:var(--neostampa)">DP</div>
+          <div><div class="name">distributor-partners</div><div class="path">03-distributors/</div></div>
+          <div class="cadence weekly">semanal</div>
+        </div>
+        <div class="agent">
+          <div class="badge pending">SF</div>
+          <div><div class="name">sublimation-direct-fabric <span class="mono" style="font-size:10px;color:var(--ink-faint);">· seg. 6</span></div><div class="path">10-sublimation-direct-fabric/</div></div>
+          <div class="cadence weekly">semanal</div>
+        </div>
+
+        <div class="agent-group-label">Segmentos secundarios (mensual)</div>
+        <div class="agent">
+          <div class="badge" style="background:var(--neotextil)">NT</div>
+          <div><div class="name">neotextil-designers</div><div class="path">08-neotextil-designers/</div></div>
+          <div class="cadence monthly">mensual</div>
+        </div>
+        <div class="agent">
+          <div class="badge" style="background:var(--neocatalog)">NC</div>
+          <div><div class="name">neocatalog-teams</div><div class="path">09-neocatalog-teams/</div></div>
+          <div class="cadence monthly">mensual</div>
+        </div>
+
+        <div class="agent-group-label">Transversales (soporte)</div>
+        <div class="agent">
+          <div class="badge" style="background:var(--gray-chip)">ST</div>
+          <div><div class="name">strategist</div><div class="path">planes, calendarios, ferias</div></div>
+          <div class="cadence support">bajo demanda</div>
+        </div>
+        <div class="agent">
+          <div class="badge" style="background:var(--accent)">BR</div>
+          <div><div class="name">brand-reviewer</div><div class="path">gate obligatorio, 11 checks</div></div>
+          <div class="cadence support">cada entrega</div>
+        </div>
+        <div class="agent">
+          <div class="badge" style="background:var(--gray-chip)">LO</div>
+          <div><div class="name">localizer</div><div class="path">ES / EN únicamente</div></div>
+          <div class="cadence support">bajo demanda</div>
+        </div>
+        <div class="agent">
+          <div class="badge" style="background:var(--gray-chip)">AN</div>
+          <div><div class="name">analyst</div><div class="path">resultados vs. 5 KPIs</div></div>
+          <div class="cadence support">bajo demanda</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Comandos</h2>
+        <div class="sub">.claude/commands/</div>
+        <div class="cmd-list">
+          <span class="cmd"><b>/</b>brief</span>
+          <span class="cmd"><b>/</b>revisa</span>
+          <span class="cmd"><b>/</b>aprende</span>
+          <span class="cmd"><b>/</b>campana</span>
+          <span class="cmd"><b>/</b>adapta</span>
+          <span class="cmd"><b>/</b>estado</span>
+          <span class="cmd"><b>/</b>redacta</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: pipeline, outputs, flags -->
+    <div>
+      <div class="card">
+        <h2>Pipeline por segmento</h2>
+        <div class="sub">Conteo real de archivos en cada carpeta de trabajo</div>
+        <div class="tablewrap">
+        <table>
+          <thead><tr><th>Segmento</th><th>Briefs</th><th>Borradores</th><th>Enviado/Pub.</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--neostampa)"></span>Existing Customers</div></td>
+              <td class="count">0</td><td class="count">0</td><td class="count">0</td>
+              <td><span class="stage-pill idle">Sin actividad</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--neostampa)"></span>DTG/DTF</div></td>
+              <td class="count">0</td><td class="count">0</td><td class="count">0</td>
+              <td><span class="stage-pill idle">Sin actividad</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--neostampa)"></span>Distribuidores</div></td>
+              <td class="count">—</td><td class="count">0</td><td class="count">—</td>
+              <td><span class="stage-pill idle">Log iniciado, 0 contactos</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--neomatch)"></span>Sublimation / D2F <span class="mono" style="font-size:10px;">seg.6</span></div></td>
+              <td class="count">0</td><td class="count">0</td><td class="count">0</td>
+              <td><span class="stage-pill idle">Recién creado</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--neotextil)"></span>neoTextil Designers</div></td>
+              <td class="count">—</td><td class="count">—</td><td class="count">—</td>
+              <td><span class="stage-pill idle">Planificado</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--neocatalog)"></span>neoCatalog Teams</div></td>
+              <td class="count">—</td><td class="count">—</td><td class="count">—</td>
+              <td><span class="stage-pill idle">Planificado</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--gray-chip)"></span>Social (cross-seg.)</div></td>
+              <td class="count">—</td><td class="count">2</td><td class="count">—</td>
+              <td><span class="stage-pill active">2 borradores listos</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--gray-chip)"></span>Tutoriales</div></td>
+              <td class="count">—</td><td class="count">1</td><td class="count">1</td>
+              <td><span class="stage-pill active">1 completo, 1 en curso</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--gray-chip)"></span>Exhibiciones — Printing United</div></td>
+              <td class="count">1</td><td class="count">1</td><td class="count">—</td>
+              <td><span class="stage-pill active">Brief + email en curso</span></td>
+            </tr>
+            <tr>
+              <td><div class="seg-name"><span class="seg-dot" style="background:var(--gray-chip)"></span>Releases</div></td>
+              <td class="count">—</td><td class="count">—</td><td class="count">4</td>
+              <td><span class="stage-pill active">neoStampa 26.6 + neoTextil 26.7 (ES/EN)</span></td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Outputs recientes</h2>
+        <div class="sub">outputs/ — listos para publicar, sin placeholders</div>
+        <ul class="plain">
+          <li class="out-item"><span class="f">neoStampa 2026 — feature posts</span><span class="k">social</span></li>
+          <li class="out-item"><span class="f">neoStampa 2026 — launch posts</span><span class="k">social</span></li>
+          <li class="out-item"><span class="f">Informe ejecutivo neoStampa Delta 2026</span><span class="k">md + pdf</span></li>
+          <li class="out-item"><span class="f">Informe inteligencia de mercado 2026 (ES)</span><span class="k">md + pdf</span></li>
+          <li class="out-item"><span class="f">Market intelligence report 2026 (EN)</span><span class="k">md</span></li>
+          <li class="out-item"><span class="f">pattern-tryon-app</span><span class="k">proyecto interno</span></li>
+          <li class="out-item"><span class="f">virtual-tryon-app</span><span class="k">proyecto interno</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Pendientes abiertos</h2>
+        <div class="sub">Flags reales, no inventados — de <code>brand-reviewer</code> y del escaneo del repo</div>
+        <ul class="plain">
+          <li class="flag"><span class="mark">[ ]</span><div class="txt"><b>Baseline del scoreboard</b> — <span>las 5 métricas siguen en `[TBD]`; es la tarea #1 de la Fase 1.</span></div></li>
+          <li class="flag"><span class="mark">[ ]</span><div class="txt"><b>Color de marca neoMatch</b> — <span>no asignado todavía; no usar un color sin confirmar.</span></div></li>
+          <li class="flag"><span class="mark">[ ]</span><div class="txt"><b>outreach-log.md</b> — <span>distribuidores sigue en "cold", 0 contactos registrados.</span></div></li>
+          <li class="flag"><span class="mark">[ ]</span><div class="txt"><b>INEDIT_RGB_POSITIVO.png</b> — <span>referenciado en CLAUDE.md pero aún no está en brand/shared/logos/.</span></div></li>
+          <li class="flag"><span class="mark">[ ]</span><div class="txt"><b>Segmentos 1 y 2</b> — <span>Existing Customers y DTG/DTF sin brief activo esta semana.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="legend">
+      <span><i style="background:var(--neostampa)"></i>neoStampa</span>
+      <span><i style="background:var(--neotextil)"></i>neoTextil</span>
+      <span><i style="background:var(--neocatalog)"></i>neoCatalog</span>
+      <span><i style="background:var(--neomatch);opacity:.6"></i>neoMatch (sin color)</span>
+    </div>
+    <div>decision-log.md — 13 reglas registradas · revisión mensual</div>
+  </footer>
+
+</div>
