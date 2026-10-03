@@ -133,6 +133,10 @@ Objective · Audience (segment + print technology) · Product/topic · Channel &
 
 User correction → orchestrator proposes a rule with `/aprende` → user confirms → rule is added to `00-strategy/decision-log.md` and to the affected agent file (and to the Claude Doc). Review the log monthly and retire stale rules.
 
+### Git discipline
+
+This repo is a single git repository (`inedit-os-pack`, no other active copy — see decision-log). After every `/aprende` and after every edit to a file in `.claude/agents/` or `.claude/commands/`, make a commit whose message explains the change (e.g. `aprende: cita exacta de Cotton Print, no generalizar`, not `update files`). Don't batch unrelated changes into one commit. Never commit a `.env`/`.env.*` file — `.gitignore` already excludes them; if one ever shows up in `git status`, stop and fix `.gitignore` before committing anything.
+
 ### Language
 
 Talk to the user in Spanish. Deliverables are written in Spanish and/or English only (newsletter: English). Catalan is internal only.
