@@ -1,6 +1,6 @@
 # General Newsletter — October 2026 (v6)
 
-**Status:** brand-reviewer PASS (4th pass, 14/14, clean — no edits). Pending user "aprobado" before send.
+**Status:** APROBADO por el usuario (2026-10-04), asunto ajustado a última hora. Copia final en `outputs/newsletter-2026-10-neostampa-26.9.md`. Si Producto confirma el beneficio del CMYKRGBHF antes del 10/10, se prepara una v7.
 **Send date:** 2026-10-10
 **Audience:** full subscriber list (general — not a segment)
 **Language:** English
@@ -8,7 +8,7 @@
 
 ---
 
-Subject: neoStampa 26.9: new ink set, fewer interruptions
+Subject: neoStampa 26.9: more reliable DTF, smoother daily runs
 Preview text: More reliable DTF printing, clearer calibration readouts, and a steadier daily workflow.
 
 ---
@@ -55,8 +55,8 @@ Target list: Full subscriber list (general newsletter, all segments, customers a
 
 **Preguntas abiertas:** ninguna bloqueante. Pendiente solo la respuesta de Producto sobre el beneficio del CMYKRGBHF (no bloquea el envío con esta versión).
 
-**Siguiente paso propuesto:** tu aprobación ("aprobado") antes del envío del 10/10/2026.
+**Siguiente paso propuesto:** envío programado 2026-10-10. Si llega confirmación de Producto sobre el beneficio del CMYKRGBHF antes de esa fecha, preparar v7 con la apertura reescrita y pasar de nuevo por `brand-reviewer` antes de reemplazar esta versión.
 
-**Historial de revisión:** v3 FAIL (condiciones/consecuencias sin respaldo en la fuente) → v4 FAIL (claim de velocidad no sourced) → v5 PASS (14/14) → v6 reescrita por feedback de contenido → v6 PASS (14/14, sin ediciones).
+**Historial de revisión:** v3 FAIL (condiciones/consecuencias sin respaldo en la fuente) → v4 FAIL (claim de velocidad no sourced) → v5 PASS (14/14) → v6 reescrita por feedback de contenido → v6 PASS (14/14) → **APROBADO** por el usuario (2026-10-04), con ajuste final de asunto.
 
 **Fuentes usadas (00-sources/):** `release-notes/neostampa-26.9-en.html` (única fuente para todas las afirmaciones del cuerpo).
