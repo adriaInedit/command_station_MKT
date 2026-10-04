@@ -4,7 +4,9 @@
 **Fuente:** https://inedit.freshdesk.com/en/support/solutions (ES: sustituir `/en/` por `/es/`)
 **Generado por:** 6 agentes en paralelo (uno por sección), vía `/actualiza-docs` en adelante.
 
-**Nota sobre manuales PDF:** ninguna de las 6 secciones (FAQs, neoStampa, neoTextil, neoCatalog, neoMatch, Integration Resources) tiene actualmente un enlace "Download Manual" en su página de categoría — confirmado de forma independiente por cada uno de los 6 agentes, verificando tanto el resumen renderizado como el HTML crudo. `00-sources/docs/manuals/` queda vacía. Esto contradice el supuesto de partida (que las 6 secciones tenían un manual descargable) — ver aviso al usuario.
+**Manuales PDF:** los 6 manuales están en la portada (https://inedit.freshdesk.com/en/support/solutions, junto al título de cada sección), no en las páginas de categoría — las páginas de categoría no tienen ese enlace, confirmado por los 6 agentes de indexación. Descargados en `00-sources/docs/manuals/` (318 MB en total; ver aviso sobre tamaño en el historial de commits).
+
+**Validación de URLs en español:** las 481 URLs ES de esta tabla (derivadas por sustitución `/en/` → `/es/`, no por fetch directo) se comprobaron una a una con `curl` el 2026-10-04: **481/481 devuelven HTTP 200**. Ninguna fila lleva marcador de error. `/actualiza-docs` repite esta validación en cada actualización y marca con `⚠️ (HTTP <code>)` cualquier URL que deje de resolver.
 
 ---
 

@@ -5,7 +5,7 @@ Mirrors the public Inèdit knowledge base: https://inedit.freshdesk.com/en/suppo
 ## Contents
 
 - **`INDEX.md`** — every indexed article, grouped by product (FAQs, neoStampa, neoTextil, neoCatalog, neoMatch, Integration Resources) and folder, with the article title and its English + Spanish URL. Carries a "fecha de generación" at the top — check it before trusting the index as current.
-- **`manuals/`** — the official PDF manual for each of the 6 sections, downloaded from that section's "Download Manual" link, when one exists. As of the 2026-10-04 generation, **none of the 6 sections had a "Download Manual" link** (confirmed independently per section, both via rendered page and raw HTML) — this folder is currently empty. Re-check with `/actualiza-docs` rather than assuming this is permanent.
+- **`manuals/`** — the official PDF manual for each of the 6 sections. The manual link sits on the **homepage** (https://inedit.freshdesk.com/en/support/solutions), next to each section's title — not on that section's category page, which has no such link. As of 2026-10-04 all 6 manuals downloaded successfully (318 MB total; neoStampa's alone is 102 MB — see `CLAUDE.md` decision log for the repo-size tradeoff this raised). Re-fetch with `/actualiza-docs`.
 
 ## How this gets built / refreshed
 
