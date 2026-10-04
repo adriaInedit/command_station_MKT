@@ -20,3 +20,6 @@ Rules born from the user's corrections. Every agent follows them. Added via `/ap
 | 2026-10 | Repositorio único: `inedit-os-pack`. `inedit-marketing` archivado como `inedit-marketing-ARCHIVO` (solo respaldo histórico, no se vuelve a tocar) | All | User decision |
 | 2026-10 | La newsletter general (toda la lista de suscriptores) la redacta el orquestador desde `00-sources/`; no se asigna por defecto a ningún agente de segmento. Pasa siempre por `brand-reviewer` | Orchestrator, existing-customers | User correction |
 | 2026-10 | Antes de redactar cualquier pieza, revisar `00-sources/` y usar solo datos que aparezcan ahí o en `CLAUDE.md`; el closing block indica qué archivos de `00-sources/` se usaron | All | User decision |
+| 2026-10 | Borradores de la newsletter general van en `11-newsletter/drafts/` (no `10-`, ya usado por `sublimation-direct-fabric`) | Orchestrator | User decision |
+| 2026-10 | Nueva sección "Official Resources" en CLAUDE.md: soporte/documentación general y la nota de versión pública de neoStampa 26.9 | All | User decision |
+| 2026-10 | neoStampa (DRD) admite X-Rite i1 Pro 3 y cartas Barbieri SpectroSwing desde v26.3 (fuente: release notes, no presentes aún en `00-sources/`) — claim sensible, requiere validación de Producto antes de usarse externamente | All, brand-reviewer | User-provided, pending Product validation |

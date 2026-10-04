@@ -26,6 +26,7 @@ RIP (Raster Image Processor) software for digital textile printing. Enables accu
 - Typical users: digital textile printers, print service providers, industrial textile manufacturers, fashion/apparel producers, home décor and soft signage printers.
 - Position in workflow: the production/printing stage — ensures designs are reproduced accurately and efficiently on digital printing equipment.
 - Compatibility: the supported-printer database lists 1,452 models (Epson 183, Mimaki 154, HP 128, Roland 94, Mutoh 86, Canon 46) — this figure changes with each build, so re-check [the supported-printers page](https://www.inedit.com/es/soporte-impresion-digital-textil/impresoras-soportadas-rip-software/) before quoting it in content rather than relying on this snapshot.
+- Spectrophotometer support (DRD / built-in calibration chart reading — distinct from neoMatch, see below): X-Rite i1 Pro 3, and reads Barbieri SpectroSwing charts, since v26.3 (source: release notes). `[SENSITIVE — new compatibility claim per "Approval levels": confirm with Product before using in external/customer-facing content. The v26.3 release notes aren't yet in 00-sources/release-notes/ — add them there for traceability.]`
 
 ### neoMatch — Color-Library Calibration
 
@@ -151,7 +152,7 @@ Talk to the user in Spanish. Deliverables are written in Spanish and/or English 
 | **S3RTEC Printer & Inks** (Spain, Apr 2026) — printer & ink partner | `dtg-dtf-acquisition`, `distributor-partners` | Partner-generated proof: calibrated a Hanrun DTF printer with neoStampa Delta v26.1 (ICC profile, linearization, ink cut) and posted it on its own; message: fewer test prints, faithful and consistent color | Their LinkedIn post (Spanish), tagging Inèdit and Nanjing Hanrun | `[NEEDS REAL DATA: official distributor status, number of test prints saved, calibration time]` |
 | **Optimum Digital USA** (Atlanta) — manufacturer of industrial inkjet printers for carpet and textile | `sublimation-direct-fabric`, `distributor-partners` | OEM partner trains its carpet-printing customers on neoStampa; profiling and color-matching workflows (incl. Pantone) adapted to carpet, "very positive results"; thanks Inèdit for technical support | LinkedIn post (EN) with color charts and Pantone patches | `[NEEDS REAL DATA: post author/date, number of customers trained, measured results; is "Optimum Digital Planet" (0 models in the printer DB) the same brand?]` |
 
-Rules: never say "identical colours" when reusing Cotton Print — say "consistent". Quote the saving as "30% less ink" — don't round it up, don't turn it into "up to" or extend it to other customers. Cotton Print is the go-to case for Spanish-language LatAm content; S3RTEC is the go-to example of a partner promoting neoStampa on its own — use it in distributor co-marketing pitches ("this is what partners like S3RTEC already do"), and reshare/engage rather than rewrite their post. Optimum Digital is the go-to case for carpet printing and for US content (coordinate US messaging with Fiery). Don't claim spectrophotometer compatibility beyond X-Rite i1 Pro without confirmation (the post mentions a Barbieri device).
+Rules: never say "identical colours" when reusing Cotton Print — say "consistent". Quote the saving as "30% less ink" — don't round it up, don't turn it into "up to" or extend it to other customers. Cotton Print is the go-to case for Spanish-language LatAm content; S3RTEC is the go-to example of a partner promoting neoStampa on its own — use it in distributor co-marketing pitches ("this is what partners like S3RTEC already do"), and reshare/engage rather than rewrite their post. Optimum Digital is the go-to case for carpet printing and for US content (coordinate US messaging with Fiery). neoStampa is confirmed to support X-Rite i1 Pro 3 and Barbieri SpectroSwing charts since v26.3 (release notes) — safe to state this specific compatibility, subject to Product sign-off per "Approval levels" (Sensitive: new compatibility claims). Beyond these two, still don't claim spectrophotometer compatibility without confirmation.
 
 ## Logos
 
@@ -188,6 +189,11 @@ Tracked in `00-strategy/kpi-scoreboard.md`. Every agent's output should be trace
 
 Do not introduce new vanity metrics (followers, opens, impressions) as primary success measures.
 
+## Official Resources (external links — use verbatim, don't paraphrase into a different URL)
+
+- **Support & documentation library** (all products): https://inedit.freshdesk.com/en/support/solutions — use for secondary/footer links when pointing to documentation generally, not one specific article.
+- **neoStampa 26.9 release notes** (public article): https://inedit.freshdesk.com/en/support/solutions/articles/14000162742 — CTA destination for the October 2026 general newsletter.
+
 ## Folder Map — Where Things Live
 
 - `00-strategy/` — the plan itself, the daily cadence, the live scoreboard, and `decision-log.md` (the learning-loop record — see "Learning loop" above). Read-only for most agents; only update the scoreboard/log when explicitly asked or via `/aprende`.
@@ -199,6 +205,7 @@ Do not introduce new vanity metrics (followers, opens, impressions) as primary s
 - `07-releases/` — the general release-launch playbook, reused whenever a real release date is confirmed.
 - `08-neotextil-designers/` `09-neocatalog-teams/` — lightweight, monthly-cadence work for the two secondary segments. Simpler structure than the core three since volume is lower.
 - `10-sublimation-direct-fabric/` — Segment 6, core/weekly work (briefs → drafts → sent), same structure as `01-existing-customers/`. Numbered 10 (not 6) purely to avoid colliding with the already-numbered `09-neocatalog-teams/` — the number is a folder-ordering artifact, not a priority signal (see Segment 6 note above).
+- `11-newsletter/` — drafts of the **general newsletter** (full subscriber list, not a segment — see "Roles" above). Numbered 11, not 10, to avoid colliding with the already-numbered `10-sublimation-direct-fabric/`; same folder-ordering-artifact caveat as that entry.
 - `brand/` — split by product: `shared/` (company logo, master typography/colors) plus `neostampa/`, `neotextil/`, `neocatalog/` (each with its own `templates/` and `assets/`). See `brand/README.md` for the full breakdown. Voice/tone guidance (not visual) stays in this file, above.
 - `outputs/` — final, ready-to-send/ready-to-publish work lands here. Nothing in `outputs/` should still have placeholder text or `[NEEDS REAL DATA]` markers.
 - `.claude/agents/` — one file per agent (segment + transversal). `.claude/commands/` — slash commands, currently `/aprende` (log a correction as a rule) and `/revisa` (review an already-published piece against this brief).
