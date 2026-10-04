@@ -1,6 +1,6 @@
-# General Newsletter — October 2026 (v3)
+# General Newsletter — October 2026 (v5)
 
-**Status:** draft, pending user approval
+**Status:** brand-reviewer PASS (3rd pass, 14-point checklist, clean — no edits). Pending user "aprobado" before send.
 **Send date:** 2026-10-10
 **Audience:** full subscriber list (general — not a segment)
 **Language:** English
@@ -9,24 +9,23 @@
 ---
 
 Subject: neoStampa 26.9: new ink set, fewer interruptions
-Preview text: Faster calibration, more reliable DTF printing, and a steadier daily workflow.
+Preview text: More reliable DTF printing, clearer calibration readouts, and a steadier daily workflow.
 
 ---
 
 neoStampa 26.9 adds support for the new CMYKRGBHF ink set.
 `[NEEDS REAL DATA: what this unlocks for printers — e.g. color range, specific use case]`
 
-DTF printing gets more predictable: the white channel now stays off
-once you've disabled it in Properties, so there's no stray white
-layer to catch and reprint.
+DTF printing gets more predictable: white ink is no longer printed
+once you've disabled the white channel in Properties.
 
-Day-to-day runs smoother too. Hot Folders now clean up after
-themselves once a job is ripped, Print Server keeps the same port
-open every time, and license activation accepts XDat files directly.
+Day-to-day runs smoother too. When the "Treat subfolder as a single
+job" option is on, Hot Folders now clean up after themselves once a
+job is ripped. Print Server keeps the same port open every time, and
+license activation now lets you add XDat files manually.
 
-Calibration got a little faster: DRD's measurement window now lists
-inks in the same order as your printed chart — one less thing to
-check by hand.
+Calibration is easier to follow too: DRD's measurement window now
+lists inks in the same order as your printed chart.
 
 Whether you're already printing with neoStampa or still exploring
 what it can do for your workflow, this is what the latest version
@@ -61,6 +60,8 @@ Target list: Full subscriber list (general newsletter, all segments, customers a
 1. ¿Cuál es el beneficio real del ink set CMYKRGBHF para completar la apertura?
 2. ¿`11-newsletter/` como numeración definitiva, o prefieres otro número/nombre?
 
-**Siguiente paso propuesto:** tu aprobación ("aprobado") antes del envío del 10/10/2026. Pendiente también la regla de `brand-reviewer` propuesta por separado vía `/aprende`.
+**Siguiente paso propuesto:** tu aprobación ("aprobado") antes del envío del 10/10/2026. (La regla de `brand-reviewer` vía `/aprende` ya se aplicó y commiteó — ver `00-strategy/decision-log.md`.)
+
+**Historial de revisión:** v3 FAIL (lista de bugs sin traducir a condición completa — Hot Folders, DTF) → v4 FAIL (claim de velocidad no sourced en el párrafo de DRD) → v5 PASS (14/14, sin ediciones).
 
 **Fuentes usadas (00-sources/):** `release-notes/neostampa-26.9-en.html` (contenido principal); `brochures/neoStampa_25_eng.pdf` (consultado para el punto 2, sin uso final en el texto).
