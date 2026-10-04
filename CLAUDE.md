@@ -191,13 +191,16 @@ Do not introduce new vanity metrics (followers, opens, impressions) as primary s
 
 ## Official Resources (external links — use verbatim, don't paraphrase into a different URL)
 
-- **Support & documentation library** (all products): https://inedit.freshdesk.com/en/support/solutions — use for secondary/footer links when pointing to documentation generally, not one specific article.
+- **Support & documentation library** (all products, public): https://inedit.freshdesk.com/en/support/solutions — Spanish version: swap `/en/` for `/es/` in any URL under this site. Use the bare solutions URL only for secondary/footer links pointing to documentation generally, not one specific article.
+- **Full documentation index**: `00-sources/docs/INDEX.md` — 481 articles across the 6 sections (FAQs, neoStampa, neoTextil, neoCatalog, neoMatch, Integration Resources), by product and folder, with English and Spanish URL side by side. `00-sources/docs/manuals/` is reserved for official PDF manuals when a "Download Manual" link exists for a section — as of the 2026-10-04 generation none of the 6 sections had one, so it's currently empty; check again via `/actualiza-docs`. See `00-sources/docs/README.md`.
 - **neoStampa 26.9 release notes** (public article): https://inedit.freshdesk.com/en/support/solutions/articles/14000162742 — CTA destination for the October 2026 general newsletter.
+
+**Rule — technical claims:** for any technical/product claim, check `00-sources/docs/` first (this is the same "check `00-sources/` before drafting" rule under "How to Work in This Repo", applied specifically to feature/technical detail). When a piece mentions a specific feature, link to that feature's exact article in `00-sources/docs/INDEX.md`, in the piece's own language (EN or ES column) — never link to a category homepage when a specific article exists in the index. If something in the official manuals contradicts this file, flag it to the user instead of silently picking one over the other.
 
 ## Folder Map — Where Things Live
 
 - `00-strategy/` — the plan itself, the daily cadence, the live scoreboard, and `decision-log.md` (the learning-loop record — see "Learning loop" above). Read-only for most agents; only update the scoreboard/log when explicitly asked or via `/aprende`.
-- `00-sources/` — general source material (brochures, flyers, release notes) that feeds the general subscriber newsletter and other cross-segment pieces. Drafted by the orchestrator directly, not routed to a segment agent. See `00-sources/README.md`.
+- `00-sources/` — general source material (brochures, flyers, release notes, official documentation in `docs/`) that feeds the general subscriber newsletter and other cross-segment pieces. Drafted by the orchestrator directly, not routed to a segment agent. See `00-sources/README.md`.
 - `01-existing-customers/` `02-dtg-dtf/` `03-distributors/` — segment-specific work in progress (briefs → drafts → sent/published).
 - `04-social/` — cross-segment social content calendar, fed by what's shipping elsewhere.
 - `05-tutorials/` — customer-facing tutorial backlog and scripts, fed by Sales questions.
@@ -217,4 +220,4 @@ Do not introduce new vanity metrics (followers, opens, impressions) as primary s
 3. Only move finished, reviewed work into `outputs/`.
 4. If a task touches visual design (graphics, one-pagers, thumbnails), produce the *copy and content brief* here, and note clearly that the next step is Claude Design — don't attempt to generate finished visual assets as code.
 5. Flag anything uncertain rather than inventing it. A flagged gap is useful; a confident wrong number is not.
-6. Before drafting any piece, check `00-sources/` for relevant brochures, flyers, or release notes. Use only data that appears there or in this file (`CLAUDE.md`) — never invent beyond those two sources. State in the closing block which `00-sources/` files were used.
+6. Before drafting any piece, check `00-sources/` for relevant brochures, flyers, release notes, or official documentation (`00-sources/docs/` — see "Official Resources" below). Use only data that appears there or in this file (`CLAUDE.md`) — never invent beyond those two sources. State in the closing block which `00-sources/` files were used.
