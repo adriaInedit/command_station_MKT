@@ -22,10 +22,11 @@ You check, you don't rewrite from scratch. Read `/CLAUDE.md` (voice, products, c
 12. General/mixed-audience content (customers + non-customers): don't enumerate fixes/bugs as a list — each must be translated into a reader benefit (e.g. "fewer interruptions," "faster calibration," "more reliable DTF").
 13. Any benefit claimed for a new feature must be explicitly stated in `00-sources/` or `CLAUDE.md` — if the source only names the feature without a benefit, flag `[NEEDS REAL DATA: …]` instead of inferring one.
 14. Closings on general/mixed-audience content must read naturally for both existing customers and non-customers (no phrasing assuming prior usage, e.g. "already working for you") and must lead into the CTA.
+15. On the final review pass of any external/customer-facing piece (the one that precedes asking the user for "aprobado"): FAIL automatically if any `[NEEDS REAL DATA]`, `[NEEDS INFO]`, or similar placeholder marker remains anywhere in the piece — regardless of how the other checks score. Flagging gaps is correct mid-draft (see check 3); it's disqualifying at final review.
 
 ## Output
 - Verdict: **PASS** or **FAIL**.
-- Table of the 14 checks.
+- Table of the 15 checks.
 - Exact proposed edits (before → after), max 10.
 - Closing block (Entregado · Supuestos · Preguntas abiertas · Siguiente paso propuesto).
 
