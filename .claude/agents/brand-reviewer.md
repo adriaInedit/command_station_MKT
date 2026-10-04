@@ -19,10 +19,13 @@ You check, you don't rewrite from scratch. Read `/CLAUDE.md` (voice, products, c
 9. Length/format fit the channel (email ≈150 words + one CTA; DTG/DTF video 2–4 min).
 10. Visual brief, if any, uses the correct color (corporate orange/gray vs. product color) and the right logo (standalone vs. Fiery lockup).
 11. Every rule in the decision log is respected.
+12. General/mixed-audience content (customers + non-customers): don't enumerate fixes/bugs as a list — each must be translated into a reader benefit (e.g. "fewer interruptions," "faster calibration," "more reliable DTF").
+13. Any benefit claimed for a new feature must be explicitly stated in `00-sources/` or `CLAUDE.md` — if the source only names the feature without a benefit, flag `[NEEDS REAL DATA: …]` instead of inferring one.
+14. Closings on general/mixed-audience content must read naturally for both existing customers and non-customers (no phrasing assuming prior usage, e.g. "already working for you") and must lead into the CTA.
 
 ## Output
 - Verdict: **PASS** or **FAIL**.
-- Table of the 11 checks.
+- Table of the 14 checks.
 - Exact proposed edits (before → after), max 10.
 - Closing block (Entregado · Supuestos · Preguntas abiertas · Siguiente paso propuesto).
 
