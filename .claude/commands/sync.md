@@ -1,5 +1,5 @@
 ---
-description: Sincroniza el repositorio con la Command Station (conocimiento sube, calendario/ideas/notas de versión bajan)
+description: Sincroniza el repositorio con la Command Station (conocimiento sube, calendario/ideas/notas de versión bajan) y exporta todo a OneDrive con /onedrive
 argument-hint: (sin argumentos)
 ---
 
@@ -46,7 +46,11 @@ Sube el texto de cada artículo de la documentación oficial para que la Command
 4. Genera `12-command-station/releases/<producto>-<version>.json`: un archivo por documento de `releases`, con el producto en minúsculas y la versión tal cual (p. ej. `neostampa-26.9.json`), conteniendo el documento completo tal como lo devuelve `read_db` (incluyendo su `id`). Borra de esa carpeta los archivos de versiones que ya no existan en la colección.
 5. No escribas nada de vuelta en `items`, `ideas`, `releases` ni `library` — esta dirección es solo lectura.
 
-## 4. Cerrar
+## 4. Exportar a OneDrive
+
+Tras completar las secciones 1–3, ejecuta `/onedrive` para que la copia en OneDrive (`Inèdit Command Station/`) quede al día con el estado que acabas de leer de la Command Station. Incluye su recuento de archivos (por carpeta) en el informe final de este comando, bajo un bloque **OneDrive:**.
+
+## 5. Cerrar
 
 1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/` (solo lo que de verdad cambió) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo. (La colección `docs` y `config/knowledge` viven solo en la Command Station, no hay archivo de repo que commitear por la sección 2, salvo que `00-sources/docs/INDEX.md` haya cambiado — eso ya lo gestiona `/actualiza-docs`.)
 2. Responde en español, en tres bloques claros:
