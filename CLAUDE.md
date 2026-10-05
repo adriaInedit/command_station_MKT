@@ -201,6 +201,8 @@ Do not introduce new vanity metrics (followers, opens, impressions) as primary s
 
 **Rule — technical claims:** for any technical/product claim, check `00-sources/docs/` first (this is the same "check `00-sources/` before drafting" rule under "How to Work in This Repo", applied specifically to feature/technical detail). When a piece mentions a specific feature, link to that feature's exact article in `00-sources/docs/INDEX.md`, in the piece's own language (EN or ES column) — never link to a category homepage when a specific article exists in the index. If something in the official manuals contradicts this file, flag it to the user instead of silently picking one over the other.
 
+**Regla — antes de afirmar o negar una función:** antes de escribir o responder sobre cualquier función o dato técnico de un producto, consulta la documentación oficial (`00-sources/docs/` o https://inedit.freshdesk.com) y enlaza el artículo exacto. Nunca afirmes que una función no existe sin haberla buscado; si no aparece, dilo y pregunta. Aplica también a `brand-reviewer` (ver su checklist).
+
 ## Folder Map — Where Things Live
 
 - `00-strategy/` — the plan itself, the daily cadence, the live scoreboard, and `decision-log.md` (the learning-loop record — see "Learning loop" above). Read-only for most agents; only update the scoreboard/log when explicitly asked or via `/aprende`.

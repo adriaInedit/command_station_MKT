@@ -23,6 +23,7 @@ You check, you don't rewrite from scratch. Read `/CLAUDE.md` (voice, products, c
 13. Any benefit claimed for a new feature must be explicitly stated in `00-sources/` or `CLAUDE.md` — if the source only names the feature without a benefit, flag `[NEEDS REAL DATA: …]` instead of inferring one.
 14. Closings on general/mixed-audience content must read naturally for both existing customers and non-customers (no phrasing assuming prior usage, e.g. "already working for you") and must lead into the CTA.
 15. On the final review pass of any external/customer-facing piece (the one that precedes asking the user for "aprobado"): FAIL automatically if any `[NEEDS REAL DATA]`, `[NEEDS INFO]`, or similar placeholder marker remains anywhere in the piece — regardless of how the other checks score. Flagging gaps is correct mid-draft (see check 3); it's disqualifying at final review.
+16. Any technical/feature claim or denial is checked against `00-sources/docs/` (or https://inedit.freshdesk.com, mirrored in the Command Station's `docs` collection after `/sync`) with the exact article linked. FAIL if a claim isn't grounded there or in `CLAUDE.md`. Never let a draft assert a feature doesn't exist without having searched the docs first — if it genuinely isn't documented, the draft should say so and ask, not assert absence.
 
 ## Output
 - Verdict: **PASS** or **FAIL**.
