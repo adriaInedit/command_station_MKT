@@ -2,7 +2,7 @@
 
 Espejo de solo lectura de la colección `ideas` de la Command Station (`https://claude.ai/artifact/GcprRC86Vef6t6UApE7evC`). Generado por `/sync`; no editar a mano.
 
-Última sincronización: 2026-10-04 19:28 (`inedit-os-pack@dc66770`).
+Última sincronización: 2026-10-05 (`inedit-os-pack@511d80b`).
 
 ## 2026-10-04 16:12 — Instagram y Facebook · neoStampa
 
