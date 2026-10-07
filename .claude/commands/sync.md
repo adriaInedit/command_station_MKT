@@ -50,10 +50,20 @@ Sube el texto de cada artículo de la documentación oficial para que la Command
 
 Tras completar las secciones 1–3, ejecuta `/onedrive` para que la copia en OneDrive (`Inèdit Command Station/`) quede al día con el estado que acabas de leer de la Command Station. Incluye su recuento de archivos (por carpeta) en el informe final de este comando, bajo un bloque **OneDrive:**.
 
-## 5. Cerrar
+## 5. Copia de seguridad del código de la Command Station
 
-1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/` (solo lo que de verdad cambió) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo. (La colección `docs` y `config/knowledge` viven solo en la Command Station, no hay archivo de repo que commitear por la sección 2, salvo que `00-sources/docs/INDEX.md` haya cambiado — eso ya lo gestiona `/actualiza-docs`.)
-2. Responde en español, en tres bloques claros:
+1. Lee la Command Station con la herramienta Artifact, acción `read`, sobre `https://claude.ai/artifact/GcprRC86Vef6t6UApE7evC` (esto guarda el HTML completo en un archivo local; la salida de la herramienta te da su ruta).
+2. Compara ese HTML con `12-command-station/station.html` tal como está ahora en el repo (si el archivo no existe todavía, trátalo como "ha cambiado").
+3. Si es distinto (o no existía): sobrescribe `12-command-station/station.html` con el HTML leído, `git add 12-command-station/station.html` y comita **en un commit aparte** (no lo mezcles con el commit de la sección 6) con el mensaje exacto `Command Station: copia de seguridad del código`.
+4. Si es idéntico: no hagas commit ni toques el archivo; anótalo como "sin cambios" para el informe.
+
+Este paso es solo una copia de seguridad del código fuente de la Command Station (para poder recuperarlo si algo lo rompe) — no lo confundas con `12-command-station/calendar.md`/`ideas.md`/`releases/`, que son los datos (sección 3), ni con el conocimiento que sube en la sección 1.
+
+## 6. Cerrar
+
+1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/calendar.md 12-command-station/ideas.md 12-command-station/releases/` (solo lo que de verdad cambió; `station.html` ya se comitea aparte en la sección 5) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo.
+2. Responde en español, en cuatro bloques claros:
    - **Subido (conocimiento):** si `kb`/`rules` cambiaron respecto a la versión leída en el paso 1.4 (y en qué, a grandes rasgos), o si no había cambios.
    - **Subido (documentación):** cuántos artículos se escribieron en `docs`, desglosados por producto/sección, cuántos se borraron (si alguno dejó de estar en el índice), y el total resultante guardado en `docsCount`.
    - **Bajado:** cuántos items/ideas/releases se leyeron y qué cambió en `calendar.md`, `ideas.md` y `releases/` respecto a la versión anterior en el repo (nuevos, modificados, eliminados), o que no había cambios.
+   - **Copia de seguridad del código:** si `station.html` cambió y se comiteó, o si no había cambios.
