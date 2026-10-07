@@ -1,5 +1,5 @@
 ---
-description: Sincroniza el repositorio con la Command Station (conocimiento sube, calendario/ideas/notas de versión bajan) y exporta todo a OneDrive con /onedrive
+description: Sincroniza el repositorio con la Command Station (conocimiento sube, calendario/ideas/notas de versión bajan), exporta todo a OneDrive con /onedrive e importa estadísticas de LinkedIn/Facebook desde OneDrive
 argument-hint: (sin argumentos)
 ---
 
@@ -59,11 +59,24 @@ Tras completar las secciones 1–3, ejecuta `/onedrive` para que la copia en One
 
 Este paso es solo una copia de seguridad del código fuente de la Command Station (para poder recuperarlo si algo lo rompe) — no lo confundas con `12-command-station/calendar.md`/`ideas.md`/`releases/`, que son los datos (sección 3), ni con el conocimiento que sube en la sección 1.
 
-## 6. Cerrar
+## 6. Importar — OneDrive → colección `metrics` (LinkedIn y Facebook)
 
-1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/calendar.md 12-command-station/ideas.md 12-command-station/releases/` (solo lo que de verdad cambió; `station.html` ya se comitea aparte en la sección 5) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo.
-2. Responde en español, en cuatro bloques claros:
+Importa a la Command Station las estadísticas que el usuario exporta manualmente desde LinkedIn (Analytics → Contenido → Exportar, `.xlsx`) y Meta Business Suite (Insights → Contenido → Exportar, `.csv`), que guarda en OneDrive (`Inèdit Command Station/Resultados/`). Es solo lectura hacia OneDrive salvo mover los archivos ya importados; es solo escritura hacia la Command Station en la colección `metrics` — **nunca toques documentos `ig-…`** (son de Instagram, los gestiona otra fuente) ni ninguna otra colección.
+
+1. Asegura que existen `Resultados/` y `Resultados/_importados/` dentro de `Inèdit Command Station/` en OneDrive (créalas si no existen).
+2. Para cada archivo `.xlsx`/`.xls` o `.csv` que esté directamente en `Resultados/` (ignora lo que ya esté en `_importados/`), ejecuta `python3 .claude/scripts/import_metrics.py "<archivo>"`. Es un script de solo librería estándar (no necesita instalar nada): detecta la plataforma por la extensión (`.xlsx`/`.xls`→LinkedIn, `.csv`→Facebook), localiza las columnas por nombre en inglés o español (impresiones/alcance, reacciones, comentarios, compartidos, clics, fecha, enlace/permalink, tipo, texto/caption/descripción), y devuelve un JSON con `{"platform", "docs":[{"doc_id","data"}], "skipped_rows", "total_rows"}` o `{"error": "..."}` si no reconoce las columnas obligatorias (fecha y alcance/impresiones).
+3. Si el script devuelve `error`: no escribas nada de ese archivo en la Command Station. Muévelo a `Resultados/_importados/_no-reconocidos/` (créala si hace falta) y repórtalo con el motivo (incluye las cabeceras que sí había, para que el usuario pueda revisar el formato) — no adivines columnas.
+4. Si devuelve `docs`: revisa rápidamente 2-3 documentos (producto y curso detectados a partir del texto, fechas con sentido) antes de escribir; si algo se ve claramente mal (p. ej. todas las fechas en 1970, o un producto detectado que no cuadra con el texto), no sigas — repórtalo en vez de escribir datos erróneos.
+5. Escribe los `docs` con `write_db`, `db_op` "batch" (grupos de hasta 50, `op` "set", `collection` "metrics", `doc_id` y `data` tal cual los da el script).
+6. Mueve el archivo procesado a `Resultados/_importados/` (si ya existe un archivo con ese nombre ahí, añade un sufijo de fecha/hora para no pisarlo).
+7. Cuenta cuántos documentos se escribieron por red (LinkedIn/Facebook) y cuántas filas se omitieron (`skipped_rows`, normalmente totales/cabeceras repetidas sin fecha ni métricas) para el informe final.
+
+## 7. Cerrar
+
+1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/calendar.md 12-command-station/ideas.md 12-command-station/releases/` (solo lo que de verdad cambió; `station.html` ya se comitea aparte en la sección 5) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo. (La sección 6 no deja archivos de repo que comitear: `metrics` vive solo en la Command Station y los archivos movidos viven en OneDrive, no en el repo.)
+2. Responde en español, en cinco bloques claros:
    - **Subido (conocimiento):** si `kb`/`rules` cambiaron respecto a la versión leída en el paso 1.4 (y en qué, a grandes rasgos), o si no había cambios.
    - **Subido (documentación):** cuántos artículos se escribieron en `docs`, desglosados por producto/sección, cuántos se borraron (si alguno dejó de estar en el índice), y el total resultante guardado en `docsCount`.
    - **Bajado:** cuántos items/ideas/releases se leyeron y qué cambió en `calendar.md`, `ideas.md` y `releases/` respecto a la versión anterior en el repo (nuevos, modificados, eliminados), o que no había cambios.
    - **Copia de seguridad del código:** si `station.html` cambió y se comiteó, o si no había cambios.
+   - **Métricas (LinkedIn/Facebook):** cuántas publicaciones se importaron por red, cuántas filas se omitieron, y cuántos archivos (si alguno) se movieron a `_no-reconocidos/` por no reconocer sus columnas.
