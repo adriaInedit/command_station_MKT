@@ -1164,22 +1164,45 @@ async function refreshMetrics(){
       e && e.code === "still_pending" ? "Windsor.ai sigue preparando los datos. Vuelve a pulsar en unos minutos." : `No se han podido traer los datos${e && e.code ? " (" + e.code + ")" : ""}`);
   } finally { S.metricsBusy = false; render(); }
 }
+const PLATFORMS = {instagram:{name:"Instagram", channel:"meta"}, linkedin:{name:"LinkedIn", channel:"linkedin"}, facebook:{name:"Facebook", channel:"meta"}};
+const platOf = d => d.platform || "instagram";
 function metricsSummary(){
-  const m = S.metrics.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)));
-  if (!m.length) return "";
-  const byType = {}; m.forEach(d => { (byType[d.type] = byType[d.type] || []).push(d); });
+  const all = S.metrics.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)));
+  if (!all.length) return "";
   const wd = ["dom","lun","mar","mié","jue","vie","sáb"];
-  return "MÉTRICAS DE INSTAGRAM (últimos 6 meses, " + m.length + " publicaciones):\n" +
-    Object.entries(byType).map(([t, arr]) => `- ${t}: ${arr.length} posts, alcance medio ${Math.round(arr.reduce((s,d)=>s+d.reach,0)/arr.length)}, ER medio ${(arr.reduce((s,d)=>s+d.er,0)/arr.length*100).toFixed(1)} %`).join("\n") +
-    "\nDETALLE (fecha · día · hora UTC · tipo · alcance · engagement · guardados · compartidos · texto):\n" +
-    m.slice(0, 40).map(d => `${d.date} · ${wd[new Date(d.date + "T12:00:00").getDay()]} · ${d.time} · ${d.type} · ${Math.round(d.reach)} · ${Math.round(d.engagement)} · ${Math.round(d.saved)} · ${Math.round(d.shares)} · ${String(d.caption).replace(/\s+/g," ").slice(0, 220)}`).join("\n");
+  return Object.keys(PLATFORMS).filter(pl => all.some(d => platOf(d) === pl)).map(pl => {
+    const m = all.filter(d => platOf(d) === pl);
+    const byType = {}; m.forEach(d => { (byType[d.type || "—"] = byType[d.type || "—"] || []).push(d); });
+    return `MÉTRICAS DE ${PLATFORMS[pl].name.toUpperCase()} (${m.length} publicaciones; "alcance" = ${pl === "linkedin" ? "impresiones" : "alcance"}):\n` +
+      Object.entries(byType).map(([t, arr]) => `- ${t}: ${arr.length} posts, alcance medio ${Math.round(arr.reduce((s,d)=>s+(d.reach||0),0)/arr.length)}, ER medio ${(arr.reduce((s,d)=>s+(d.er||0),0)/arr.length*100).toFixed(1)} %`).join("\n") +
+      "\nDETALLE (fecha · día · hora · tipo · alcance · engagement · clics · guardados · compartidos · texto):\n" +
+      m.slice(0, 40).map(d => `${d.date} · ${wd[new Date(d.date + "T12:00:00").getDay()]} · ${d.time || "—"} · ${d.type || "—"} · ${Math.round(d.reach||0)} · ${Math.round(d.engagement||0)} · ${d.clicks != null ? Math.round(d.clicks) : "—"} · ${d.saved != null ? Math.round(d.saved) : "—"} · ${Math.round(d.shares||0)} · ${String(d.caption||"").replace(/\s+/g," ").slice(0, 220)}`).join("\n");
+  }).join("\n\n");
+}
+async function promoteBest(){
+  if (!S.db) return 0;
+  let n = 0;
+  for (const pl of Object.keys(PLATFORMS)){
+    const docs = S.metrics.filter(d => platOf(d) === pl);
+    if (docs.length < 4) continue;
+    const mr = median(docs.map(d => d.reach || 0)), me = median(docs.map(d => d.er || 0));
+    const best = docs.filter(d => (d.lang === "en" || d.lang === "es") && nchars(d.caption) > 60 && (d.reach || 0) >= mr && (d.er || 0) >= me * 1.2).sort((a,b) => (b.er||0) - (a.er||0)).slice(0, 3);
+    for (const d of best){
+      const id = pl.slice(0,2) + "-" + String(d.media_id).replace(/[^\w-]/g, "").slice(0, 60);
+      if (S.models.some(m => m.id === id)) continue;
+      await S.db.collection("models").doc(id).set({channel:PLATFORMS[pl].channel, product:d.product || guessProduct(d.caption), audience:"all", lang:d.lang || guessLang(d.caption), title:`${PLATFORMS[pl].name} ${d.date} · alcance ${Math.round(d.reach||0)} · ER ${((d.er||0)*100).toFixed(1)} %`, body:d.caption, source:"datos", createdAt: Date.now()});
+      n++;
+    }
+  }
+  return n;
 }
 async function runAnalyst(){
   if (!S.sample || S.analystBusy) return;
   if (!S.metrics.length) { toast("Primero actualiza los datos"); return; }
   S.analystBusy = true; render();
   try {
-    const res = await S.sample(`Eres el Analista de marketing de Inèdit Software. Analiza los resultados reales y dime qué funciona, con evidencias. Responde en ${uiLangName()}, en texto plano, con estas secciones: 1) Resumen en 3 frases. 2) Qué funciona (temas, formatos, ganchos, horarios), citando publicaciones concretas con sus cifras. 3) Qué no funciona. 4) 5 recomendaciones concretas para las próximas 2 semanas, cada una ligada a un KPI de Inèdit. 5) Limitaciones de los datos (muestra pequeña, solo Instagram, etc.). No inventes cifras: usa solo las de abajo. Las métricas de vanidad (alcance, likes) son contexto; prioriza guardados, compartidos y visitas al perfil como señales de interés.
+    try { const n = await promoteBest(); if (n) toast(`${n} publicación(es) con mejor rendimiento añadidas a Piezas modelo`); } catch(e){}
+    const res = await S.sample(`Eres el Analista de marketing de Inèdit Software. Analiza los resultados reales y dime qué funciona, con evidencias. Responde en ${uiLangName()}, en texto plano, con estas secciones: 1) Resumen en 3 frases. 2) Qué funciona (temas, formatos, ganchos, horarios), citando publicaciones concretas con sus cifras. 3) Qué no funciona. 4) 5 recomendaciones concretas para las próximas 2 semanas, cada una ligada a un KPI de Inèdit. 5) Limitaciones de los datos (muestra pequeña, canales que faltan, impresiones de LinkedIn frente a alcance de Instagram, etc.). Si hay varias redes, compáralas. No inventes cifras: usa solo las de abajo. Las métricas de vanidad (alcance, likes) son contexto; prioriza guardados, compartidos y visitas al perfil como señales de interés.
 ${kbText()}
 
 ${metricsSummary()}
@@ -1193,19 +1216,22 @@ ${calendarContext()}`, {cache:false, modelTier:"complex"});
 function viewResults(){
   const wrap = h("div",null);
   const cfg = S.metricsCfg || {};
-  wrap.append(h("div",{class:"head"}, h("div",null, h("h2",null,"Resultados y Analista"), h("p",null,"Métricas reales de vuestras redes a través de Windsor.ai. El Analista os dice qué funciona y las publicaciones que mejor rinden pasan solas a Piezas modelo.")),
+  wrap.append(h("div",{class:"head"}, h("div",null, h("h2",null,"Resultados y Analista"), h("p",null,"Métricas reales de vuestras redes: Instagram a través de Windsor.ai, y LinkedIn y Facebook importados desde vuestras exportaciones en OneDrive. El Analista os dice qué funciona y las publicaciones que mejor rinden pasan a Piezas modelo.")),
     h("div",{class:"actions"},
       h("button",{class:"btn", disabled:!S.mcp || S.metricsBusy, onclick:refreshMetrics}, S.metricsBusy ? "Trayendo datos…" : "Actualizar datos"),
       h("button",{class:"btn primary", disabled:!S.sample || S.analystBusy || !S.metrics.length, onclick:runAnalyst}, S.analystBusy ? "Analizando…" : "Pedir informe al Analista"))));
   if (!S.mcp && S.dbReady) wrap.append(h("div",{class:"notice"},"Windsor.ai no está disponible en esta vista. Abre la página publicada en claude.ai con tu cuenta."));
   wrap.append(h("div",{class:"srcs"},
     h("div",{class:"src"}, h("b",null,"Instagram"), h("span",{class:"on"}, "Conectado"), " · inedit_software", cfg.lastRefresh ? h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, "Actualizado " + new Date(cfg.lastRefresh).toLocaleString("es-ES",{day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})) : null),
-    ...[["LinkedIn","linkedin_organic"],["Facebook","facebook_organic"],["Email (Mailchimp, Brevo…)","según vuestra herramienta"]].map(([n, c]) => h("div",{class:"src"}, h("b",null,n), h("span",{class:"off"}, "No conectado"), h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, "Conéctalo en windsor.ai (" + c + ") y avísame para añadirlo.")))));
+    ...["linkedin","facebook"].map(pl => { const m = S.metrics.filter(d => platOf(d) === pl); const last = m.reduce((a,d) => Math.max(a, d.fetchedAt || 0), 0);
+      return h("div",{class:"src"}, h("b",null, PLATFORMS[pl].name), m.length ? h("span",{class:"on"}, "Importado") : h("span",{class:"off"}, "Sin datos"),
+        h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, m.length ? `${m.length} publicaciones · importado ${new Date(last).toLocaleDateString("es-ES")} desde OneDrive` : "Exporta las estadísticas y guárdalas en OneDrive › Inèdit Command Station › Resultados; se importan con /sync.")); }),
+    h("div",{class:"src"}, h("b",null,"Email (Salesforce)"), h("span",{class:"off"}, "Sin datos"), h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, "Pendiente de definir."))));
   const m = S.metrics;
   if (m.length){
     const tot = k => m.reduce((s,d) => s + (d[k] || 0), 0);
     wrap.append(h("div",{class:"kpis"},
-      [["Publicaciones", m.length], ["Alcance total", Math.round(tot("reach")).toLocaleString("es-ES")], ["Engagement medio", (m.reduce((s,d)=>s+d.er,0)/m.length*100).toFixed(1) + " %"], ["Guardados", Math.round(tot("saved"))], ["Compartidos", Math.round(tot("shares"))]]
+      [["Publicaciones", m.length], ...Object.keys(PLATFORMS).filter(pl => m.some(d => platOf(d) === pl)).map(pl => { const x = m.filter(d => platOf(d) === pl); return [`Engagement medio · ${PLATFORMS[pl].name}`, (x.reduce((s,d)=>s+(d.er||0),0)/x.length*100).toFixed(1) + " %"]; }), ["Compartidos", Math.round(tot("shares"))]]
       .map(([l,v]) => h("div",{class:"kpi"}, h("div",{class:"v"}, v), h("div",{class:"l"}, l)))));
   }
   const rep0 = S.reports[0];
@@ -1214,10 +1240,10 @@ function viewResults(){
   if (!m.length){ wrap.append(h("p",{class:"empty"}, "Pulsa \"Actualizar datos\" para traer las publicaciones de Instagram de los últimos 6 meses.")); return wrap; }
   const tb = h("tbody",null);
   m.slice().sort((a,b) => String(b.date).localeCompare(String(a.date))).forEach(d => tb.append(h("tr",null,
-    h("td",null, fmtDate(d.date)), h("td",null, d.type), h("td",null, h("a",{href:d.permalink, target:"_blank", rel:"noopener"}, String(d.caption).replace(/\s+/g," ").slice(0, 70) + (nchars(d.caption) > 70 ? "…" : ""))),
-    h("td",null, Math.round(d.reach)), h("td",null, (d.er*100).toFixed(1) + " %"), h("td",null, Math.round(d.saved)), h("td",null, Math.round(d.shares)))));
+    h("td",null, fmtDate(d.date)), h("td",null, PLATFORMS[platOf(d)]?.name || ""), h("td",null, d.type || ""), h("td",null, h("a",{href:d.permalink, target:"_blank", rel:"noopener"}, String(d.caption).replace(/\s+/g," ").slice(0, 70) + (nchars(d.caption) > 70 ? "…" : ""))),
+    h("td",null, Math.round(d.reach||0)), h("td",null, ((d.er||0)*100).toFixed(1) + " %"), h("td",null, d.saved != null ? Math.round(d.saved) : "—"), h("td",null, Math.round(d.shares||0)))));
   wrap.append(h("div",{class:"list"}, h("h3",null,"Publicaciones"), h("div",{class:"tablewrap"}, h("table",{class:"table"},
-    h("thead",null, h("tr",null, h("th",null,"Fecha"), h("th",null,"Tipo"), h("th",null,"Publicación"), h("th",null,"Alcance"), h("th",null,"Engagement"), h("th",null,"Guardados"), h("th",null,"Compartidos"))), tb))));
+    h("thead",null, h("tr",null, h("th",null,"Fecha"), h("th",null,"Red"), h("th",null,"Tipo"), h("th",null,"Publicación"), h("th",null,"Alcance / impresiones"), h("th",null,"Engagement"), h("th",null,"Guardados"), h("th",null,"Compartidos"))), tb))));
   return wrap;
 }
 
