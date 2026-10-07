@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Lee un export de oportunidades de Salesforce (.csv) y produce agregados
-diarios y trimestrales de ventas cerradas-ganadas. Solo librería estándar.
-Uso: python3 import_ventas.py <archivo.csv> > salida.json
+"""Lee un export de oportunidades de Salesforce (.csv). Produce un registro por
+cada oportunidad (cualquier fase, no solo cerrada-ganada) con su fase real y un
+grupo (ganada/abierta/perdida) para filtrar dinámicamente, y además agregados
+diarios y trimestrales solo de las cerradas-ganadas (para el Libro de Ventas).
+Solo librería estándar. Uso: python3 import_ventas.py <archivo.csv> > salida.json
 """
 import sys, os, re, csv, json, unicodedata
 from datetime import date
@@ -93,6 +95,14 @@ def quarter_of(d_iso):
     q = (int(m) - 1) // 3 + 1
     return f'{y}-Q{q}'
 
+def stage_group(stage):
+    s = unicodedata.normalize('NFKD', stage or '').encode('ascii', 'ignore').decode('ascii').lower()
+    if 'won' in s or 'ganad' in s:
+        return 'ganada'
+    if 'lost' in s or 'perdid' in s:
+        return 'perdida'
+    return 'abierta'
+
 def main():
     path = sys.argv[1]
     rows = read_csv_rows(path)
@@ -107,17 +117,12 @@ def main():
         return
 
     deals = []
-    skipped_not_won = 0
     skipped_bad_row = 0
     for row in rows:
         def get(key):
             c = cols.get(key)
             return row.get(c, '') if c else ''
         stage = get('stage').strip()
-        stage_norm = unicodedata.normalize('NFKD', stage).encode('ascii', 'ignore').decode('ascii').lower()
-        if 'won' not in stage_norm and 'ganad' not in stage_norm:
-            skipped_not_won += 1
-            continue
         d = parse_date(get('close_date'))
         amount = parse_amount(get('amount'))
         if not d or amount is None:
@@ -139,10 +144,13 @@ def main():
             'date': d,
             'quarter': quarter_of(d),
             'amount': round(amount, 2),
+            'stage': stage or None,
+            'stageGroup': stage_group(stage),
         })
 
+    won = [d for d in deals if d['stageGroup'] == 'ganada']
     daily = {}
-    for deal in deals:
+    for deal in won:
         rec = daily.setdefault(deal['date'], {'date': deal['date'], 'amount': 0.0, 'dealCount': 0})
         rec['amount'] += deal['amount']
         rec['dealCount'] += 1
@@ -159,7 +167,7 @@ def main():
         rec['amount'] = round(rec['amount'], 2)
 
     quarterly = {}
-    for deal in deals:
+    for deal in won:
         rec = quarterly.setdefault(deal['quarter'], {'quarter': deal['quarter'], 'amount': 0.0, 'dealCount': 0})
         rec['amount'] += deal['amount']
         rec['dealCount'] += 1
@@ -167,9 +175,14 @@ def main():
         rec['amount'] = round(rec['amount'], 2)
     quarterly_sorted = sorted(quarterly.values(), key=lambda r: r['quarter'])
 
+    by_group = {}
+    for d in deals:
+        by_group[d['stageGroup']] = by_group.get(d['stageGroup'], 0) + 1
+
     print(json.dumps({
         'deals': len(deals),
-        'skipped_not_won': skipped_not_won,
+        'won': len(won),
+        'by_stage_group': by_group,
         'skipped_bad_row': skipped_bad_row,
         'total_rows': len(rows),
         'daily': daily_sorted,
