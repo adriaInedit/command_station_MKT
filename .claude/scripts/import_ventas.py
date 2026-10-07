@@ -38,8 +38,13 @@ def map_cols(headers_norm):
         'name': find_col(headers_norm, 'opportunity name', 'nombre de la oportunidad', 'nombre'),
         'account': find_col(headers_norm, 'account name', 'account', 'cuenta'),
         'owner': find_col(headers_norm, 'owner', 'propietario'),
+        'country': find_col(headers_norm, 'country', 'pais', 'país'),
         'id': find_col(headers_norm, 'opportunity id', 'id de la oportunidad', 'id'),
     }
+
+def sanitize_id(s):
+    s = re.sub(r'[^A-Za-z0-9_-]+', '-', s or '').strip('-')
+    return (s[:150] if s else 'sin-id')
 
 def parse_amount(raw):
     s = (raw or '').strip()
@@ -118,14 +123,22 @@ def main():
         if not d or amount is None:
             skipped_bad_row += 1
             continue
+        name = get('name').strip() or None
+        account = get('account').strip() or None
+        owner = get('owner').strip() or None
+        sf_id = get('id').strip() or None
+        doc_id = 'sf-' + sanitize_id(sf_id or f'{account}-{name}-{d}-{amount}')
         deals.append({
-            'id': get('id').strip() or None,
-            'name': get('name').strip() or None,
-            'account': get('account').strip() or None,
-            'owner': get('owner').strip() or None,
+            'doc_id': doc_id,
+            'id': sf_id,
+            'name': name,
+            'opportunity': name,
+            'account': account,
+            'owner': owner,
+            'country': get('country').strip() or None,
             'date': d,
             'quarter': quarter_of(d),
-            'amount': amount,
+            'amount': round(amount, 2),
         })
 
     daily = {}
@@ -161,6 +174,7 @@ def main():
         'total_rows': len(rows),
         'daily': daily_sorted,
         'quarterly': quarterly_sorted,
+        'deal_records': deals,
     }, ensure_ascii=False))
 
 if __name__ == '__main__':
