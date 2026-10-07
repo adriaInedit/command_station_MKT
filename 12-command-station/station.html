@@ -659,7 +659,7 @@ const S = {
   dbReady: false, ready: {items:false, library:false, ideas:false},
   thread: [], threadCtx: null, busy: false, ctl: null,
   form: {type:"social", sub:"linkedin", product:"neostampa", audience:"all", lang:"en", text:""}, calProd: "all",
-  releases: [], rel: null, theme: (() => { try { return localStorage.getItem("ics-theme") || "auto"; } catch(e){ return "auto"; } })(), uiLang: (() => { try { return localStorage.getItem("ics-lang") || "es"; } catch(e){ return "es"; } })(), i18n: null, companyTexts: [], ct: null, models: [], pack: null, metrics: [], reports: [], metricsCfg: null, metricsBusy: false, analystBusy: false, plan: null, planBusy: false, fair: null, content: [], folders: [], designReqs: [], sales: [], salesOwner: "", salesCountry: "", salesQuarter: "", libFolder: "__all", libQuery: "", libKind: "", libProd: "", libStatus: "", libSort: "recent", reqCfg: null, brandCfg: null, knowledge: null, downloads: null, mcp: null
+  releases: [], rel: null, theme: (() => { try { return localStorage.getItem("ics-theme") || "auto"; } catch(e){ return "auto"; } })(), uiLang: (() => { try { return localStorage.getItem("ics-lang") || "es"; } catch(e){ return "es"; } })(), i18n: null, companyTexts: [], ct: null, models: [], pack: null, metrics: [], reports: [], metricsCfg: null, metricsBusy: false, analystBusy: false, plan: null, planBusy: false, fair: null, content: [], folders: [], designReqs: [], sales: [], salesOwner: "", salesCountry: "", salesQuarter: "", salesStage: "", libFolder: "__all", libQuery: "", libKind: "", libProd: "", libStatus: "", libSort: "recent", reqCfg: null, brandCfg: null, knowledge: null, downloads: null, mcp: null
 };
 
 /* ---------- Helpers ---------- */
@@ -1363,18 +1363,33 @@ function viewResults(){
 }
 
 /* ---------- Ventas (Salesforce) ---------- */
+const STAGE_GROUPS = [
+  {id:"", name:"Todas"},
+  {id:"ganada", name:"Ganadas", color:"#509E2F"},
+  {id:"abierta", name:"Pipeline abierto", color:"#E0A100"},
+  {id:"perdida", name:"Perdidas", color:"#C42A1A"}
+];
+const SG = Object.fromEntries(STAGE_GROUPS.filter(g=>g.id).map(g => [g.id, g]));
 function salesFiltered(){
-  return S.sales.filter(d => (!S.salesOwner || d.owner === S.salesOwner) && (!S.salesCountry || d.country === S.salesCountry) && (!S.salesQuarter || d.quarter === S.salesQuarter));
+  return S.sales.filter(d => (!S.salesOwner || d.owner === S.salesOwner) && (!S.salesCountry || d.country === S.salesCountry) && (!S.salesQuarter || d.quarter === S.salesQuarter) && (!S.salesStage || d.stageGroup === S.salesStage));
+}
+function stageChip(d){
+  const g = SG[d.stageGroup] || {color:"var(--muted)"};
+  return h("span",{style:{display:"inline-flex", alignItems:"center", gap:"5px", fontSize:"12px"}},
+    h("span",{style:{width:"7px", height:"7px", borderRadius:"50%", background:g.color, flex:"none"}}), d.stage || "—");
 }
 function viewSales(){
-  if (!S.sales.length) return h("div",{class:"list"}, h("h3",null,"Ventas"), h("p",{class:"empty"}, "Todavía no hay ventas importadas. Exporta las oportunidades cerradas-ganadas de Salesforce a CSV, déjalas en OneDrive › Ventas Salesforce › Importar, y ejecuta /ventas."));
+  if (!S.sales.length) return h("div",{class:"list"}, h("h3",null,"Ventas"), h("p",{class:"empty"}, "Todavía no hay oportunidades importadas. Exporta el informe de oportunidades de Salesforce a CSV, déjalo en OneDrive › Ventas Salesforce › Importar, y ejecuta /ventas."));
   const owners = [...new Set(S.sales.map(d => d.owner).filter(Boolean))].sort();
   const countries = [...new Set(S.sales.map(d => d.country).filter(Boolean))].sort();
   const quarters = [...new Set(S.sales.map(d => d.quarter).filter(Boolean))].sort().reverse();
   const sel = (label, value, opts, onchange) => h("label",null, label, h("select",{onchange}, h("option",{value:""}, "Todos"), opts.map(o => h("option",{value:o, selected:value===o}, o))));
+  const stagePills = h("div",{class:"sub", style:{margin:"0"}}, STAGE_GROUPS.map(g => h("button",{class:"pchip noicon", "aria-pressed": S.salesStage===g.id ? "true":"false", onclick:()=>{ S.salesStage = g.id; render(); }},
+    g.color ? h("span",{style:{display:"inline-block", width:"7px", height:"7px", borderRadius:"50%", background:g.color}}) : null, g.name + (g.id ? ` (${S.sales.filter(d=>d.stageGroup===g.id).length})` : ` (${S.sales.length})`))));
   const wrap = h("div",{class:"list"},
     h("h3",null,"Ventas"),
-    h("div",{class:"ftools"},
+    stagePills,
+    h("div",{class:"ftools", style:{marginTop:"12px"}},
       sel("Propietario", S.salesOwner, owners, e => { S.salesOwner = e.target.value; render(); }),
       sel("País", S.salesCountry, countries, e => { S.salesCountry = e.target.value; render(); }),
       sel("Trimestre", S.salesQuarter, quarters, e => { S.salesQuarter = e.target.value; render(); })));
@@ -1392,9 +1407,9 @@ function viewSales(){
     h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por país"), barList(byGroup("country")))));
   const tb = h("tbody",null);
   f.slice().sort((a,b) => String(b.date).localeCompare(String(a.date))).forEach(d => tb.append(h("tr",null,
-    h("td",null, fmtDate(d.date)), h("td",null, d.owner||"—"), h("td",null, d.account||"—"), h("td",null, d.country||"—"), h("td",null, d.opportunity||"—"), h("td",null, fmtMoney(d.amount)))));
+    h("td",null, fmtDate(d.date)), h("td",null, stageChip(d)), h("td",null, d.owner||"—"), h("td",null, d.account||"—"), h("td",null, d.country||"—"), h("td",null, d.opportunity||"—"), h("td",null, fmtMoney(d.amount)))));
   wrap.append(h("div",{class:"tablewrap"}, h("table",{class:"table"},
-    h("thead",null, h("tr",null, h("th",null,"Fecha"), h("th",null,"Propietario"), h("th",null,"Cuenta"), h("th",null,"País"), h("th",null,"Oportunidad"), h("th",null,"Importe"))), tb)));
+    h("thead",null, h("tr",null, h("th",null,"Fecha"), h("th",null,"Fase"), h("th",null,"Propietario"), h("th",null,"Cuenta"), h("th",null,"País"), h("th",null,"Oportunidad"), h("th",null,"Importe"))), tb)));
   return wrap;
 }
 
