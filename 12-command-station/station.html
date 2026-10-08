@@ -927,6 +927,35 @@ dialog{background:linear-gradient(150deg, rgba(255,255,255,.86), rgba(255,255,25
 
 /* Rail: floating glass sidebar */
 .rail{position:sticky; top:12px; margin:12px 0 12px 12px; height:calc(100vh - 24px); border-radius:30px; padding:20px 12px 16px; color:var(--ink)}
+/* Rail scrollbar: thin, translucent glass thumb */
+.rail{scrollbar-width:auto; scrollbar-color:auto}
+.rail::-webkit-scrollbar{width:12px}
+.rail::-webkit-scrollbar-track{background:transparent; margin:28px 0}
+.rail::-webkit-scrollbar-thumb{border:4px solid transparent; border-radius:999px; background-clip:padding-box; background-color:rgba(40,25,60,.10); background-image:linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+.rail:hover::-webkit-scrollbar-thumb{background-color:rgba(40,25,60,.22)}
+.rail::-webkit-scrollbar-thumb:hover{background-color:rgba(40,25,60,.34)}
+.rail::-webkit-scrollbar-thumb:active{background-color:rgba(40,25,60,.44)}
+.rail::-webkit-scrollbar-corner,.rail::-webkit-scrollbar-button{display:none; background:transparent}
+@supports (-moz-appearance:none){ .rail{scrollbar-width:thin; scrollbar-color:rgba(40,25,60,.24) transparent} }
+:root[data-theme="dark"] .rail::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.10); background-image:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+:root[data-theme="dark"] .rail:hover::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.22)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .rail::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.10); background-image:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+  :root:not([data-theme="light"]) .rail:hover::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.22)}
+}
+/* Collapsible sections */
+.colsec{margin-top:28px; padding-top:18px; border-top:1px solid var(--line)}
+.colhead{display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; width:100%; border:0; background:transparent; padding:4px 0; margin:0 0 10px; text-align:left; color:inherit; cursor:pointer; font:inherit}
+.colhead h3{margin:0; font-size:16px}
+.colhead .sum{color:var(--muted); font-size:13.5px; font-variant-numeric:tabular-nums}
+.colhead .tg{margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:650; padding:6px 12px 6px 14px; border-radius:999px; background:rgba(255,255,255,.55); border:1px solid var(--lg-edge); box-shadow:inset 0 1px 0 var(--lg-hi)}
+.colhead:hover .tg{background:rgba(255,255,255,.88)}
+.colhead .tg svg{width:15px; height:15px; transform:rotate(-90deg); transition:transform .2s}
+.colhead[aria-expanded="false"]{margin-bottom:0}
+.colhead[aria-expanded="false"] .tg svg{transform:rotate(90deg)}
+:root[data-theme="dark"] .colhead .tg{background:rgba(255,255,255,.07)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .colhead .tg{background:rgba(255,255,255,.07)} }
+@media (prefers-reduced-motion:reduce){ .colhead .tg svg{transition:none} }
 body.rail-mini .rail{padding:20px 10px}
 .nav button{color:var(--ink)}
 .nav button:hover{background:rgba(255,255,255,.42); color:var(--ink)}
@@ -2356,6 +2385,21 @@ function wonMonths(year, repId){
 }
 const cumul = a => a.reduce((o, v, i) => (o.push((i ? o[i-1] : 0) + v), o), []);
 const fmtShortMoney = n => n >= 1e6 ? (n/1e6).toLocaleString("es-ES",{maximumFractionDigits:1}) + " M€" : n >= 1e3 ? Math.round(n/1e3).toLocaleString("es-ES") + " k€" : Math.round(n) + " €";
+/* ---------- Collapsible sections (remembered in this browser) ---------- */
+const COLLAPSED = (() => { try { return new Set(JSON.parse(localStorage.getItem("ics-collapsed") || "[]")); } catch(e){ return new Set(); } })();
+const isCollapsed = k => COLLAPSED.has(k);
+function toggleCollapsed(k){
+  if (COLLAPSED.has(k)) COLLAPSED.delete(k); else COLLAPSED.add(k);
+  try { localStorage.setItem("ics-collapsed", JSON.stringify([...COLLAPSED])); } catch(e){}
+  const y = window.scrollY; render(); window.scrollTo(0, y);
+  setTimeout(() => document.querySelector(`.colhead[data-k="${k}"]`)?.focus(), 0);
+}
+function collapseHead(k, title, summary){
+  const open = !isCollapsed(k);
+  return h("button",{class:"colhead", type:"button", dataset:{k}, "aria-expanded": open ? "true" : "false", title: open ? "Minimizar este apartado" : "Mostrar este apartado", onclick:()=>toggleCollapsed(k)},
+    h("h3",null, title), !open && summary ? h("span",{class:"sum"}, summary) : null,
+    h("span",{class:"tg"}, open ? "Minimizar" : "Mostrar", icon("chev")));
+}
 function salesTargetPanel(){
   const now = new Date(), cy = now.getFullYear();
   const years = [...new Set(S.sales.map(yearOf).filter(y => /^\d{4}$/.test(y)).concat(String(cy)))].sort().reverse();
@@ -2499,7 +2543,11 @@ function salesTargetPanel(){
     try { { const doc = Object.assign({}, S.salesTargets, {updatedAt: Date.now()}); delete doc.id; await S.db.collection("config").doc("sales-targets").set(doc); } toast("Objetivos por país guardados"); }
     catch(e){ toast("No se ha podido guardar"); }
   }}, "Guardar objetivos por país");
-  box.append(h("h3",{style:{marginTop:"28px"}}, `Objetivos por país · ${yr}` + (rep ? " · toda la empresa" : "")),
+  const ctTarget = Object.values(byCountry).reduce((a,b) => a + (+b || 0), 0);
+  const ctSec = h("div",{class:"colsec"});
+  box.append(ctSec);
+  ctSec.append(collapseHead("countries", `Objetivos por país · ${yr}` + (rep ? " · toda la empresa" : ""), ctTarget ? `${fmtShortMoney(totalActual)} de ${fmtShortMoney(ctTarget)} · ${Math.round(totalActual/ctTarget*100)} %` : `${fmtShortMoney(totalActual)} facturado`));
+  if (!isCollapsed("countries")) ctSec.append(
     h("p",{style:{fontSize:"12px", color:"var(--muted)", margin:"0 0 10px"}}, "Facturado = oportunidades ganadas del año. Los países que no están en ninguna zona se suman en \"Otros\". Pasa el ratón por el nombre para ver qué países incluye."),
     rows, h("div",{style:{display:"flex", gap:"8px", marginTop:"4px"}}, saveCountryBtn));
   return box;
@@ -2658,8 +2706,12 @@ function viewSales(){
   const sel = (label, value, opts, onchange) => h("label",null, label, h("select",{onchange}, h("option",{value:""}, "Todos"), opts.map(o => h("option",{value:o, selected:value===o}, o))));
   const stagePills = h("div",{class:"sub", style:{margin:"0"}}, STAGE_GROUPS.map(g => h("button",{class:"pchip noicon", "aria-pressed": S.salesStage===g.id ? "true":"false", onclick:()=>{ S.salesStage = g.id; render(); }},
     g.color ? h("span",{style:{display:"inline-block", width:"7px", height:"7px", borderRadius:"50%", background:g.color}}) : null, g.name + (g.id ? ` (${S.sales.filter(d=>d.stageGroup===g.id).length})` : ` (${S.sales.length})`))));
+  if (isCollapsed("sales")){
+    const tot = salesFiltered().reduce((s,d) => s + (d.amount||0), 0);
+    return h("div",{class:"list"}, collapseHead("sales", "Todas las ventas", `${S.sales.length.toLocaleString("es-ES")} oportunidades · ${fmtShortMoney(tot)} con los filtros actuales`));
+  }
   const wrap = h("div",{class:"list"},
-    h("h3",null,"Ventas"),
+    collapseHead("sales", "Todas las ventas"),
     stagePills,
     h("div",{class:"ftools", style:{marginTop:"12px"}},
       sel("Propietario", S.salesOwner, owners, e => { S.salesOwner = e.target.value; render(); }),
@@ -3090,17 +3142,6 @@ function sideContent(){
   frag.append(h("div",{class:"panel"}, h("h3",null,"Planificación"),
     h("button",{class:"btn primary", style:{width:"100%"}, disabled:!S.sample || S.planBusy, onclick:()=>{ go("calendar"); planWeek(); }}, S.planBusy ? "Planificando…" : "Planifica mi semana"),
     h("p",{class:"empty", style:{margin:"8px 0 0", fontSize:"12.5px"}}, "El Estratega revisa huecos, equilibrio entre segmentos, ferias y resultados, y te propone la semana.")));
-  const p2 = h("div",{class:"panel"}, h("h3",null,"Encargos rápidos"));
-  const q = h("div",{class:"quick"});
-  [
-    [{type:"social", sub:"linkedin", product:"neostampa", audience:"dtgdtf", lang:"en"}, "Post de LinkedIn: la tinta blanca DTF sigue exactamente tus ajustes de canal en neoStampa 26.9."],
-    [{type:"video", sub:null, product:"neostampa", audience:"dtgdtf", lang:"en"}, "Vídeo demo: calibrar una impresora DTF con el Calibration Wizard."],
-    [{type:"event", sub:"webinars", product:"neomatch", audience:"industrial", lang:"both"}, "Webinar: igualar colores Pantone en producción textil con neoMatch."],
-    [{type:"emailing", sub:null, product:"neostampa", audience:"partners", lang:"en"}, "Email a distribuidores: propuesta de co-marketing con el caso S3RTEC."],
-    [{type:"social", sub:"instagram", product:"neostampa", audience:"all", lang:"es"}, "Instagram: caso Cotton Print Chile, 30 % menos de tinta."]
-  ].forEach(([cfg, txt]) => q.append(h("button",{onclick:()=>{ S.thread = []; S.form = Object.assign({}, cfg, {text:txt}); render(); document.getElementById("prompt")?.focus(); }},
-    h("span",{class:"tag", style:{background:PR[cfg.product].color, marginRight:"6px"}}, PR[cfg.product].short), typeLabel(cfg) + " · " + AU[cfg.audience].name, h("br"), h("span",{style:{color:"var(--muted)"}}, txt))));
-  p2.append(q); frag.append(p2);
   const ideas = S.ideas.slice(0,4);
   if (ideas.length){
     const p3 = h("div",{class:"panel"}, h("h3",null,"Últimas ideas"));
@@ -4680,3 +4721,4 @@ renderRail(); render(); setFoot();
 </script>
 </body>
 </html>
+
