@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inèdit Command Station</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<meta name="theme-color" content="#7A74B4">
+<meta name="theme-color" content="#F29B6C">
 <style>
 :root{
   --paper:#F3F4F5; --surface:#FFFFFF; --ink:#1C2024; --muted:#5E6367; --line:#DADDE0; --soft:#ECEEF0;
@@ -539,7 +539,7 @@ body.rail-mini .app{grid-template-columns:92px minmax(0,1fr)}
 .brand small{color:var(--on-glass-muted); font-size:12.5px}
 #brandBox{display:flex; align-items:center; gap:10px; min-width:0}
 #brandBox .bt{min-width:0}
-#brandLogo{filter:brightness(0) invert(1); margin:0 !important}
+#brandLogo{margin:0 !important}
 .strip{display:none}
 .collapse{border:0; background:transparent; color:var(--on-glass-muted); width:30px; height:30px; border-radius:10px; display:grid; place-items:center; flex:none}
 .collapse:hover{background:var(--glass-strong); color:var(--on-glass)}
@@ -848,16 +848,192 @@ dialog::backdrop{background:rgba(35,32,58,.4); backdrop-filter:blur(4px)}
 .brand{gap:0}
 .brandrow{min-height:44px}
 #brandBox{flex:1; min-width:0; display:flex; align-items:center}
-#brandLogo{display:block; width:auto; height:auto; max-width:min(100%,190px); max-height:40px; object-fit:contain}
+#brandLogo{display:block; width:auto; height:auto; max-width:min(100%,196px); max-height:52px; object-fit:contain}
 .brandtxt{font-weight:700; font-size:17px; color:var(--on-glass); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 body.rail-mini #brandBox{justify-content:center}
 body.rail-mini #brandLogo{max-width:62px; max-height:26px}
 body.rail-mini .brandtxt{font-size:12px}
-.topbar .tlogo{height:24px; width:auto; max-width:120px; object-fit:contain; filter:brightness(0) invert(1)}
+.topbar .tlogo{height:26px; width:auto; max-width:130px; object-fit:contain}
 .topbar .brandtxt{font-size:14px}
 .topbar b{padding-left:6px; border-left:1px solid var(--glass-line); font-weight:600}
 @media (max-width:1180px) and (min-width:761px){ #brandBox{justify-content:center} #brandLogo{max-width:62px; max-height:26px} .brandtxt{font-size:12px} }
 @media (max-width:760px){ #brandLogo{max-width:180px; max-height:38px} }
+/* Collapsed menu shows the ē icon; open menu shows the full Fiery | Inèdit logo */
+#brandIcon{display:none; height:34px; width:auto; object-fit:contain}
+body.rail-mini #brandIcon{display:block}
+body.rail-mini #brandLogo,body.rail-mini .brandtxt{display:none !important}
+@media (max-width:1180px) and (min-width:761px){ #brandIcon{display:block} #brandLogo,.brandtxt{display:none !important} }
+@media (max-width:760px){ #brandIcon,body.rail-mini #brandIcon{display:none} body.rail-mini #brandLogo{display:block !important; max-width:180px; max-height:38px} }
+
+/* ===== Liquid Glass (v4) ===== */
+:root{
+  --bgL1:#F29B6C; --bgL2:#F6BE8F; --bgL3:#F7E7C6; --bgD1:#2A1C17; --bgD2:#33231C; --bgD3:#3D2D22;
+  --onL:#2A1B14; --onL-muted:rgba(42,27,20,.72);
+  --bg1:var(--bgL1); --bg2:var(--bgL2); --bg3:var(--bgL3); --on-bg:var(--onL); --on-bg-muted:var(--onL-muted);
+  --lg-fill:linear-gradient(150deg, rgba(255,255,255,.68) 0%, rgba(255,255,255,.44) 100%);
+  --lg-fill-2:linear-gradient(150deg, rgba(255,255,255,.52) 0%, rgba(255,255,255,.28) 100%);
+  --lg-inner:rgba(255,255,255,.44); --lg-edge:rgba(255,255,255,.72); --lg-hi:rgba(255,255,255,.95); --lg-lo:rgba(255,255,255,.32);
+  --lg-drop:0 14px 36px rgba(40,20,10,.13), 0 2px 6px rgba(40,20,10,.06);
+  --lg-blur:blur(28px) saturate(185%);
+  --line:rgba(40,25,60,.10); --soft:rgba(255,255,255,.52);
+  --pill-base:rgba(255,255,255,.8); --pill-ink:#2A2550;
+  --on-glass:var(--ink); --on-glass-muted:var(--muted); --glass-line:rgba(255,255,255,.7); --glass-strong:rgba(255,255,255,.5);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg1:var(--bgD1); --bg2:var(--bgD2); --bg3:var(--bgD3); --on-bg:#F4F2FB; --on-bg-muted:rgba(244,242,251,.74);
+    --lg-fill:linear-gradient(150deg, rgba(60,56,86,.62) 0%, rgba(34,32,54,.46) 100%);
+    --lg-fill-2:linear-gradient(150deg, rgba(70,66,96,.45) 0%, rgba(40,38,60,.28) 100%);
+    --lg-inner:rgba(255,255,255,.05); --lg-edge:rgba(255,255,255,.15); --lg-hi:rgba(255,255,255,.22); --lg-lo:rgba(255,255,255,.05);
+    --lg-drop:0 16px 40px rgba(0,0,0,.42), 0 2px 6px rgba(0,0,0,.2);
+    --line:rgba(255,255,255,.10); --soft:rgba(255,255,255,.07); --pill-base:rgba(40,38,62,.85); --pill-ink:#F1EFFB;
+    --glass-line:rgba(255,255,255,.15); --glass-strong:rgba(255,255,255,.1);
+  }
+}
+:root[data-theme="dark"]{
+  --bg1:var(--bgD1); --bg2:var(--bgD2); --bg3:var(--bgD3); --on-bg:#F4F2FB; --on-bg-muted:rgba(244,242,251,.74);
+  --lg-fill:linear-gradient(150deg, rgba(60,56,86,.62) 0%, rgba(34,32,54,.46) 100%);
+  --lg-fill-2:linear-gradient(150deg, rgba(70,66,96,.45) 0%, rgba(40,38,60,.28) 100%);
+  --lg-inner:rgba(255,255,255,.05); --lg-edge:rgba(255,255,255,.15); --lg-hi:rgba(255,255,255,.22); --lg-lo:rgba(255,255,255,.05);
+  --lg-drop:0 16px 40px rgba(0,0,0,.42), 0 2px 6px rgba(0,0,0,.2);
+  --line:rgba(255,255,255,.10); --soft:rgba(255,255,255,.07); --pill-base:rgba(40,38,62,.85); --pill-ink:#F1EFFB;
+  --glass-line:rgba(255,255,255,.15); --glass-strong:rgba(255,255,255,.1);
+}
+html{background:var(--bg1)}
+body{background:
+  radial-gradient(55vw 45vh at 88% 4%, color-mix(in srgb, var(--bg3) 85%, transparent), transparent 72%),
+  radial-gradient(48vw 42vh at 6% 96%, color-mix(in srgb, var(--bg2) 90%, white 10%), transparent 70%),
+  radial-gradient(36vw 30vh at 42% 58%, color-mix(in srgb, var(--bg1) 70%, white 30%), transparent 72%),
+  linear-gradient(165deg, var(--bg1) 0%, var(--bg2) 52%, var(--bg3) 100%);
+  background-attachment:fixed}
+
+/* Floating glass boxes (they blur what is behind them) */
+.rail,.sheet,.wd,.wd.white,.wd.glass,.wd.note,.wd.tl,.editbar,.tabbar,.topbar,dialog,.reply,.pillbtn,.roundbtn,.seg,.addtray button,.head .btn,.toast{
+  background:var(--lg-fill) !important; -webkit-backdrop-filter:var(--lg-blur); backdrop-filter:var(--lg-blur);
+  border:1px solid var(--lg-edge) !important;
+  box-shadow:inset 0 1px 0 var(--lg-hi), inset 0 -1px 1px var(--lg-lo), inset 1px 0 0 var(--lg-lo), var(--lg-drop) !important;
+  color:var(--ink)}
+dialog{background:linear-gradient(150deg, rgba(255,255,255,.86), rgba(255,255,255,.72)) !important}
+:root[data-theme="dark"] dialog{background:linear-gradient(150deg, rgba(52,48,78,.92), rgba(34,32,54,.86)) !important}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) dialog{background:linear-gradient(150deg, rgba(52,48,78,.92), rgba(34,32,54,.86)) !important} }
+.toast{color:var(--ink) !important; font-weight:600}
+.wd.glass{background:linear-gradient(150deg, color-mix(in srgb, var(--bg1) 26%, rgba(255,255,255,.5)), rgba(255,255,255,.26)) !important}
+.wd.glass,.wd.glass .muted,.wd.tl,.tl-h,.tl-h .muted{color:var(--ink)}
+.wd.glass .muted,.tl-h .muted{color:var(--muted) !important}
+.wd.glass .prog{background:var(--soft)} .wd.glass .prog i{background:var(--accent)}
+.wd.glass .prow:hover,.wd.white .prow:hover{background:rgba(255,255,255,.45)}
+.sparks b,.wd.white .sparks b{background:linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 55%, white))}
+.wd.note{background:linear-gradient(150deg, rgba(255,255,255,.8), rgba(255,255,255,.58)) !important}
+
+/* Rail: floating glass sidebar */
+.rail{position:sticky; top:12px; margin:12px 0 12px 12px; height:calc(100vh - 24px); border-radius:30px; padding:20px 12px 16px; color:var(--ink)}
+body.rail-mini .rail{padding:20px 10px}
+.nav button{color:var(--ink)}
+.nav button:hover{background:rgba(255,255,255,.42); color:var(--ink)}
+.nav button[aria-current="page"]{background:rgba(255,255,255,.88); color:var(--ink); box-shadow:inset 0 1px 0 #fff, 0 6px 16px rgba(40,20,10,.12)}
+.nav .group{color:var(--muted)}
+.nav .sep{background:var(--line)}
+.nav .cdot{box-shadow:0 0 0 2px rgba(255,255,255,.8)}
+.rail .foot{color:var(--muted); border-top-color:var(--line)}
+.rail .foot .langsw{border-color:var(--line)}
+.rail .foot .langsw button{color:var(--muted)}
+.rail .foot .langsw button[aria-pressed="true"]{background:var(--ink); color:var(--surface)}
+.collapse{color:var(--muted)} .collapse:hover{background:rgba(255,255,255,.5); color:var(--ink)}
+.brandtxt{color:var(--ink)}
+.bgbtn{display:flex; align-items:center; gap:8px; width:100%; border:1px solid var(--line); background:rgba(255,255,255,.4); color:var(--ink); border-radius:12px; padding:7px 10px; font-size:13px; font-weight:600; margin-top:8px}
+.bgbtn i{width:18px; height:18px; border-radius:6px; background:linear-gradient(135deg, var(--bg1), var(--bg3)); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+
+/* Text that sits directly on the gradient */
+.head,.head h2,.dash-head,.dash-head h2{color:var(--on-bg)}
+.head p,.dash-head .date{color:var(--on-bg-muted)}
+.pillbtn,.roundbtn,.seg button,.head .btn{color:var(--ink) !important}
+.pillbtn:hover,.roundbtn:hover,.head .btn:hover{background:rgba(255,255,255,.85) !important}
+.pillbtn.on{background:rgba(255,255,255,.9) !important}
+.head .btn.primary{background:var(--ink) !important; color:var(--surface) !important; border-color:transparent !important}
+.head .btn.primary:hover{background:var(--accent) !important; color:#fff !important}
+.addtray button{color:var(--ink)} .addtray span{color:var(--muted)}
+.dgrid.editing .wd{outline-color:color-mix(in srgb, var(--on-bg) 35%, transparent)}
+
+/* Boxes inside a glass box: lighter glass, no extra blur */
+.sheet .composer,.sheet .side .panel,.sheet .out,.sheet .rel .form,.sheet .ct .form,.sheet .pack .form,.sheet .fair .form,.sheet .fcard,.sheet .pcard,.sheet .mform,.sheet .linkform,.sheet .calwrap,.sheet .folders,.sheet .report,.sheet .plan,.sheet .src,.sheet .mcard,.sheet .asset,.sheet .ccard,.sheet .msg.ai,.sheet .visual,.sheet .idea,.sheet .table,.sheet .drop,.sheet .libdrop,.sheet .cdtip,.sheet .sw,.sheet .dodont .box,.sheet .names div,.tl-b,.qbtn,.editbar .btn{
+  background:var(--lg-inner) !important; border:1px solid var(--lg-edge) !important; box-shadow:inset 0 1px 0 var(--lg-hi), 0 1px 2px rgba(40,20,10,.04) !important}
+.sheet .plan,.sheet .report,.sheet .cdtip{border-left:3px solid var(--accent) !important}
+.tl-b{border-width:1px 0 0 0 !important; border-radius:0 !important}
+.tl-side{background:rgba(255,255,255,.28)}
+.tl-lines div{border-left-color:var(--line)}
+.tl-h .search{background:rgba(255,255,255,.55); border-color:var(--lg-edge)}
+.tl-h .search input{color:var(--ink)} .tl-h .search input::placeholder{color:var(--muted)}
+.qbtn{color:var(--ink)}
+.qbtn:nth-child(1){background:color-mix(in srgb, var(--blush) 70%, transparent) !important}
+.qbtn:nth-child(2){background:color-mix(in srgb, var(--lilac) 70%, transparent) !important}
+.qbtn:nth-child(3){background:color-mix(in srgb, var(--peach) 70%, transparent) !important}
+.qbtn:nth-child(4){background:color-mix(in srgb, var(--mint) 70%, transparent) !important}
+.sheet .kpis .kpi,.kpis .kpi{border:1px solid var(--lg-edge) !important; box-shadow:inset 0 1px 0 var(--lg-hi) !important}
+.kpis .kpi:nth-child(5n+1){background:color-mix(in srgb, var(--blush) 72%, transparent)}
+.kpis .kpi:nth-child(5n+2){background:color-mix(in srgb, var(--lilac) 72%, transparent)}
+.kpis .kpi:nth-child(5n+3){background:color-mix(in srgb, var(--mint) 72%, transparent)}
+.kpis .kpi:nth-child(5n+4){background:color-mix(in srgb, var(--butter) 72%, transparent)}
+.kpis .kpi:nth-child(5n+5){background:color-mix(in srgb, var(--peach) 72%, transparent)}
+.table{background:transparent !important}
+.table th{background:rgba(255,255,255,.4)}
+.msg.user{background:color-mix(in srgb, var(--lilac) 75%, transparent); border:1px solid var(--lg-edge)}
+.notice{background:color-mix(in srgb, var(--butter) 80%, transparent); border:1px solid var(--lg-edge)}
+
+/* Controls as glass */
+.btn{background:rgba(255,255,255,.55); border:1px solid var(--lg-edge); box-shadow:inset 0 1px 0 var(--lg-hi), 0 1px 2px rgba(40,20,10,.05); color:var(--ink)}
+.btn:hover{background:rgba(255,255,255,.85); border-color:var(--lg-edge)}
+.btn.primary{background:var(--ink); color:var(--surface); border-color:transparent; box-shadow:0 4px 14px rgba(30,20,50,.22)}
+.btn.ghost{background:transparent; box-shadow:none; border-color:transparent}
+select,input[type=text],input[type=url],input[type=number],input[type=date],input[type=search],textarea{background:rgba(255,255,255,.58) !important; border:1px solid var(--lg-edge) !important; box-shadow:inset 0 1px 2px rgba(40,20,10,.05)}
+.pchip,.type{background:rgba(255,255,255,.45); border:1px solid var(--lg-edge)}
+.type[aria-pressed="true"]{background:rgba(255,255,255,.88); border-color:var(--indigo)}
+.prog{background:rgba(40,25,60,.08)}
+.tabbar button[aria-current="page"]{background:rgba(255,255,255,.7)}
+.topbar{border-radius:0 0 22px 22px; border-top:0 !important}
+.topbar button{background:rgba(255,255,255,.5) !important; color:var(--ink)}
+.topbar b{color:var(--ink); border-left-color:var(--line)}
+
+/* Dark mode: inner surfaces */
+:root[data-theme="dark"] .nav button[aria-current="page"],:root[data-theme="dark"] .type[aria-pressed="true"],:root[data-theme="dark"] .pillbtn.on{background:rgba(255,255,255,.16) !important}
+:root[data-theme="dark"] .btn,:root[data-theme="dark"] .pchip,:root[data-theme="dark"] .type,:root[data-theme="dark"] .tl-h .search,:root[data-theme="dark"] .bgbtn,:root[data-theme="dark"] .topbar button{background:rgba(255,255,255,.07) !important}
+:root[data-theme="dark"] select,:root[data-theme="dark"] input[type=text],:root[data-theme="dark"] input[type=url],:root[data-theme="dark"] input[type=number],:root[data-theme="dark"] input[type=date],:root[data-theme="dark"] input[type=search],:root[data-theme="dark"] textarea{background:rgba(255,255,255,.06) !important}
+:root[data-theme="dark"] .nav button:hover,:root[data-theme="dark"] .pillbtn:hover,:root[data-theme="dark"] .roundbtn:hover,:root[data-theme="dark"] .btn:hover{background:rgba(255,255,255,.12) !important}
+:root[data-theme="dark"] .table th,:root[data-theme="dark"] .tl-side{background:rgba(255,255,255,.05)}
+:root[data-theme="dark"] .wd.note{background:var(--lg-fill) !important}
+:root[data-theme="dark"] .wd.glass{background:linear-gradient(150deg, color-mix(in srgb, var(--bg1) 40%, rgba(70,66,96,.5)), rgba(40,38,60,.3)) !important}
+:root[data-theme="dark"] .btn.primary{background:var(--ink) !important; color:#1C1A2E}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .nav button[aria-current="page"],:root:not([data-theme="light"]) .type[aria-pressed="true"],:root:not([data-theme="light"]) .pillbtn.on{background:rgba(255,255,255,.16) !important}
+  :root:not([data-theme="light"]) .btn,:root:not([data-theme="light"]) .pchip,:root:not([data-theme="light"]) .type,:root:not([data-theme="light"]) .tl-h .search,:root:not([data-theme="light"]) .bgbtn,:root:not([data-theme="light"]) .topbar button{background:rgba(255,255,255,.07) !important}
+  :root:not([data-theme="light"]) select,:root:not([data-theme="light"]) input[type=text],:root:not([data-theme="light"]) input[type=url],:root:not([data-theme="light"]) input[type=number],:root:not([data-theme="light"]) input[type=date],:root:not([data-theme="light"]) input[type=search],:root:not([data-theme="light"]) textarea{background:rgba(255,255,255,.06) !important}
+  :root:not([data-theme="light"]) .nav button:hover,:root:not([data-theme="light"]) .pillbtn:hover,:root:not([data-theme="light"]) .roundbtn:hover,:root:not([data-theme="light"]) .btn:hover{background:rgba(255,255,255,.12) !important}
+  :root:not([data-theme="light"]) .table th,:root:not([data-theme="light"]) .tl-side{background:rgba(255,255,255,.05)}
+  :root:not([data-theme="light"]) .wd.note{background:var(--lg-fill) !important}
+  :root:not([data-theme="light"]) .wd.glass{background:linear-gradient(150deg, color-mix(in srgb, var(--bg1) 40%, rgba(70,66,96,.5)), rgba(40,38,60,.3)) !important}
+  :root:not([data-theme="light"]) .btn.primary{background:var(--ink) !important; color:#1C1A2E}
+}
+
+/* Background picker */
+.bgpick{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px}
+.bgpick button{align-self:stretch; border:2px solid transparent; border-radius:18px; padding:0; overflow:hidden; background:transparent; text-align:left; display:flex; flex-direction:column; color:var(--ink)}
+.bgpick button[aria-pressed="true"]{border-color:var(--ink)}
+.bgpick .sw2{height:64px; display:block}
+.bgpick .nm{flex:1; font-size:13px; font-weight:650; padding:6px 10px 8px; background:rgba(255,255,255,.6)}
+.bgcustom{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 14px; border-radius:18px; background:rgba(255,255,255,.5); border:1px solid var(--lg-edge)}
+.bgcustom input[type=color]{width:52px; height:40px; border:0; padding:0; background:transparent; border-radius:12px; cursor:pointer}
+.bgcustom input[type=text]{width:110px; font-variant-numeric:tabular-nums; text-transform:uppercase}
+
+@media (max-width:1180px){ .rail{margin:12px 0 12px 12px} }
+@media (max-width:760px){
+  .rail{position:fixed; inset:0 auto 0 0; z-index:70; width:min(300px,86vw); margin:0; top:0; height:100%; border-radius:0 28px 28px 0; border-left:0 !important}
+  .topbar{border-radius:0 0 20px 20px}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .rail,.sheet,.wd,.editbar,.tabbar,.topbar,dialog,.reply{background:linear-gradient(150deg, rgba(255,255,255,.94), rgba(255,255,255,.86)) !important}
+}
+@media (prefers-reduced-transparency:reduce){
+  .rail,.sheet,.wd,.editbar,.tabbar,.topbar,dialog,.reply{background:var(--surface) !important; backdrop-filter:none; -webkit-backdrop-filter:none}
+}
 </style>
 </head>
 <body>
@@ -866,7 +1042,8 @@ body.rail-mini .brandtxt{font-size:12px}
     <div class="brand">
       <div class="brandrow">
         <div id="brandBox">
-          <img id="brandLogo" alt="Fiery | Inèdit" style="display:none">
+          <img id="brandIcon" src="/_blob/18325fe768cd3e9db877caf6371a4cd4" alt="Inèdit">
+          <img id="brandLogo" alt="Fiery | Inèdit" style="display:none" onerror="this.style.display='none'; var t=document.getElementById('brandTitle'); if(t) t.style.display='';">
           <span id="brandTitle" class="brandtxt">Fiery | Inèdit</span>
         </div>
         <button class="collapse" id="railToggle" type="button" title="Contraer menú" aria-label="Contraer o expandir el menú"></button>
@@ -1138,7 +1315,7 @@ function applyTheme(t){
 function setTheme(t){
   S.theme = t; applyTheme(t);
   try { localStorage.setItem("ics-theme", t); } catch(e){}
-  setFoot();
+  renderRail(); setFoot();
   toast(t === "dark" ? "Modo oscuro" : t === "light" ? "Modo claro" : "Modo automático (sigue al sistema)");
 }
 function themeSwitch(){
@@ -1153,12 +1330,14 @@ function langSwitch(){
 }
 
 /* ---------- Rail ---------- */
+const BRAND_LOGO_WHITE = "/_blob/08c5585dfc2fdde4dcd66b631d8cdeae", BRAND_LOGO_COLOR = "/_blob/b295a1c47aa8b3c0a5d8acef8945e992";
 function renderBrand(){
   const img = document.getElementById("brandLogo"), t = document.getElementById("brandTitle"); if (!img || !t) return;
   const logo = S.library.find(a => a.category === "logos" && a.assetId && /^image\//.test(a.contentType || "") && /fiery/i.test(a.name) && /inedit/i.test(norm(a.name)) && !/white|blanco|negativ/i.test(a.name))
             || S.library.find(a => a.category === "logos" && a.assetId && /^image\//.test(a.contentType || "") && /fiery/i.test(a.name));
-  S.brandLogoSrc = logo ? "/_blob/" + logo.assetId : null;
-  if (logo){ if (img.getAttribute("src") !== S.brandLogoSrc) img.src = S.brandLogoSrc; img.style.display = "block"; t.style.display = "none"; }
+  // Light glass gets the colour logo; dark mode gets the white version
+  S.brandLogoSrc = isDarkTheme() ? BRAND_LOGO_WHITE : (logo ? "/_blob/" + logo.assetId : BRAND_LOGO_COLOR);
+  if (S.brandLogoSrc){ if (img.getAttribute("src") !== S.brandLogoSrc) img.src = S.brandLogoSrc; img.style.display = "block"; t.style.display = "none"; }
   else { img.style.display = "none"; t.style.display = ""; }
 }
 function renderRail(){
@@ -1189,15 +1368,16 @@ function renderRail(){
   const rt = document.getElementById("railToggle"); if (rt && !rt.firstChild){ rt.append(icon("chevl")); rt.onclick = toggleRailMini; }
   renderChrome();
 }
+function bgButton(){ return h("button",{class:"bgbtn", onclick:openBgPicker, title:"Cambiar el color del degradado de fondo"}, h("i",null), "Color de fondo"); }
 function setFoot(){
   const f = document.getElementById("foot");
-  if (!window.claude || !window.claude.use) { f.replaceChildren(h("div",null,"Vista previa: abre la página publicada para guardar datos."), h("div",{style:{display:"flex", flexWrap:"wrap", gap:"6px"}}, langSwitch(), themeSwitch())); return; }
+  if (!window.claude || !window.claude.use) { f.replaceChildren(h("div",null,"Vista previa: abre la página publicada para guardar datos."), h("div",{style:{display:"flex", flexWrap:"wrap", gap:"6px"}}, langSwitch(), themeSwitch()), bgButton()); return; }
   if (!S.dbReady) { f.textContent = "Conectando…"; return; }
-  if (!S.db) { f.replaceChildren(h("div",null,"Sin conexión al almacenamiento: inicia sesión en claude.ai."), h("div",{style:{display:"flex", flexWrap:"wrap", gap:"6px"}}, langSwitch(), themeSwitch())); trNode(f); return; }
+  if (!S.db) { f.replaceChildren(h("div",null,"Sin conexión al almacenamiento: inicia sesión en claude.ai."), h("div",{style:{display:"flex", flexWrap:"wrap", gap:"6px"}}, langSwitch(), themeSwitch()), bgButton()); trNode(f); return; }
   const k = S.knowledge;
   f.replaceChildren(h("div",null,"Guardado automático activo."),
     h("div",{style:{marginTop:"4px"}}, k && k.syncedAt ? `Conocimiento sincronizado con Claude Code el ${new Date(k.syncedAt).toLocaleString("es-ES",{day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})}.` : "Conocimiento: versión integrada (aún sin /sync)."),
-    h("div",{style:{display:"flex", flexWrap:"wrap", gap:"6px"}}, langSwitch(), themeSwitch()),
+    h("div",{style:{display:"flex", flexWrap:"wrap", gap:"6px"}}, langSwitch(), themeSwitch()), bgButton(),
     h("div",{style:{marginTop:"4px"}}, S.docs ? (S.docs.length ? `Documentación: ${S.docs.length} artículos de Freshdesk.` : "Documentación: sin sincronizar (falta /sync).") : (k && k.docsCount ? `Documentación: ${k.docsCount} artículos de Freshdesk.` : "Documentación: comprobando…")));
 }
 function go(view){ S.view = view; if (view !== "home") S.dashEdit = false; setNavOpen(false); renderRail(); render(); window.scrollTo(0,0); }
@@ -1288,7 +1468,7 @@ async function loadDashRemote(){
     if (!S.userId) return;
     const snap = await S.db.collection("data/users/" + S.userId).doc("dashboard").get();
     const v = snap && (typeof snap.data === "function" ? snap.data() : snap);
-    if (snap && snap.exists !== false && v && Array.isArray(v.order)){ S.dash = JSON.parse(JSON.stringify({order:v.order, hidden:v.hidden||[], size:v.size||{}, notes:v.notes||[]})); try { localStorage.setItem("ics-dash", JSON.stringify(S.dash)); } catch(e){} if (S.view === "home") render(); }
+    if (snap && snap.exists !== false && v && Array.isArray(v.order)){ S.dash = JSON.parse(JSON.stringify({order:v.order, hidden:v.hidden||[], size:v.size||{}, notes:v.notes||[], bg:v.bg||null})); if (S.dash.bg && hexToHsl(S.dash.bg)) { applyBg(S.dash.bg); try { localStorage.setItem("ics-bg", S.dash.bg); } catch(e){} } try { localStorage.setItem("ics-dash", JSON.stringify(S.dash)); } catch(e){} if (S.view === "home") render(); }
   } catch(e){}
 }
 const wsize = id => { const d = dashState(); return d.size[id] || WD[id].size; };
@@ -1486,9 +1666,10 @@ function viewHome(){
     h("div",null, h("h2",null,"Panel de marketing"), h("div",{class:"date"}, `${hi} · ${now.toLocaleDateString("es-ES",{weekday:"long", day:"numeric", month:"long"})}`)),
     h("div",{class:"acts"},
       h("button",{class:"pillbtn" + (editing ? " on" : ""), "aria-pressed": editing ? "true" : "false", onclick:()=>{ S.dashEdit = !editing; render(); }}, icon(editing ? "x" : "edit"), editing ? "Terminar" : "Personalizar"),
+      h("button",{class:"roundbtn", title:"Color de fondo", "aria-label":"Cambiar el color de fondo", onclick:openBgPicker}, icon("palette")),
       h("button",{class:"roundbtn", title:"Nuevo contenido", "aria-label":"Nuevo contenido", onclick:()=>go("command")}, icon("plus")))));
   if (editing) wrap.append(h("div",{class:"editbar"}, h("p",null, "Arrastra los widgets para reordenarlos, o usa las flechas. Elige el ancho y oculta los que no uses. Los cambios se guardan solos y solo los ves tú."),
-    h("button",{class:"btn small ghost", onclick:async ()=>{ if (await askConfirm("¿Restablecer el panel a su diseño inicial? Tus tareas de Prioridades se mantienen.", "Restablecer")){ const notes = d.notes; S.dash = Object.assign(DEFAULT_DASH(), {notes}); saveDash(); render(); } }}, icon("reset"), " Restablecer"),
+    h("button",{class:"btn small ghost", onclick:async ()=>{ if (await askConfirm("¿Restablecer el panel a su diseño inicial? Tus tareas de Prioridades se mantienen.", "Restablecer")){ const notes = d.notes, bg = d.bg; S.dash = Object.assign(DEFAULT_DASH(), {notes, bg}); saveDash(); render(); } }}, icon("reset"), " Restablecer"),
     h("button",{class:"btn small primary", onclick:()=>{ S.dashEdit = false; render(); }}, "Listo")));
   if (S.dbReady && !S.db) wrap.append(h("div",{class:"notice"}, "Sin conexión al almacenamiento: el panel se guarda solo en este navegador."));
   const grid = h("div",{class:"dgrid" + (editing ? " editing" : "")});
@@ -1499,6 +1680,79 @@ function viewHome(){
   if (!editing && !d.order.some(id => !d.hidden.includes(id))) wrap.append(h("div",{class:"notice"}, "Has ocultado todos los widgets. Pulsa Personalizar para añadirlos de nuevo."));
   return wrap;
 }
+
+/* ---------- Background colour ---------- */
+const BG_PRESETS = [
+  {id:"inedit", name:"Naranja Inèdit", hex:"#F29B6C"},
+  {id:"lavanda", name:"Lavanda", hex:"#7A74B4"},
+  {id:"neostampa", name:"Azul neoStampa", hex:"#5E93D6"},
+  {id:"neocatalog", name:"Verde neoCatalog", hex:"#7FB46C"},
+  {id:"neotextil", name:"Rojo neoTextil", hex:"#E0796F"},
+  {id:"arena", name:"Arena", hex:"#CBB497"},
+  {id:"grafito", name:"Grafito", hex:"#73777C"}
+];
+const BG_DEFAULT = "#F29B6C";
+const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+function hexToHsl(hex){
+  const m = String(hex||"").replace("#","").match(/^([0-9a-f]{6})$/i); if (!m) return null;
+  const n = parseInt(m[1],16), r = (n>>16 & 255)/255, g = (n>>8 & 255)/255, b = (n & 255)/255;
+  const mx = Math.max(r,g,b), mn = Math.min(r,g,b), l = (mx+mn)/2; let hh = 0, ss = 0;
+  if (mx !== mn){ const d = mx - mn; ss = l > .5 ? d/(2-mx-mn) : d/(mx+mn); hh = mx === r ? (g-b)/d + (g < b ? 6 : 0) : mx === g ? (b-r)/d + 2 : (r-g)/d + 4; hh *= 60; }
+  return [hh, ss*100, l*100];
+}
+function hslToRgb(hh, ss, ll){ ss/=100; ll/=100; const k = n => (n + hh/30) % 12, a = ss*Math.min(ll, 1-ll), f = n => ll - a*Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n), 1))); return [f(0), f(8), f(4)]; }
+const hsl = (hh, ss, ll) => `hsl(${Math.round((hh+360)%360)} ${clampN(ss,0,100).toFixed(1)}% ${clampN(ll,0,100).toFixed(1)}%)`;
+const relLum = ([r,g,b]) => { const c = v => v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); return .2126*c(r) + .7152*c(g) + .0722*c(b); };
+function bgVars(hex){
+  const p = hexToHsl(hex) || hexToHsl(BG_DEFAULT); const [H, Sa, L] = p;
+  const l1 = clampN(L, 30, 78), l2 = clampN(l1 + 11, 40, 86), l3 = clampN(l1 + 24, 60, 92);
+  const ds = Math.min(Sa, 45) * .9;
+  const lum = relLum(hslToRgb(H, Sa, l1));
+  const dark = lum > .36;
+  return {
+    "--bgL1": hsl(H, Sa, l1), "--bgL2": hsl(H + 8, Sa * .95, l2), "--bgL3": hsl(H + 25, Sa * .7, l3),
+    "--bgD1": hsl(H, ds, 12), "--bgD2": hsl(H + 8, ds * .9, 17), "--bgD3": hsl(H + 25, ds * .8, 23),
+    "--accent": Sa < 12 ? "#E0457A" : hsl(H, clampN(Sa + 15, 55, 88), 52), "--accent-soft": Sa < 12 ? "#F6BFD2" : hsl(H, clampN(Sa, 50, 85), 82),
+    "--onL": dark ? hsl(H, 40, 13) : "#FFFFFF", "--onL-muted": dark ? `hsl(${Math.round(H)} 30% 15% / .74)` : "rgba(255,255,255,.88)",
+    _meta: hsl(H, Sa, l1)
+  };
+}
+function applyBg(hex){
+  const v = bgVars(hex), r = document.documentElement;
+  Object.entries(v).forEach(([k, val]) => { if (k[0] === "-") r.style.setProperty(k, val); });
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", v._meta);
+  S.bg = hex;
+}
+function currentBg(){ return S.bg || BG_DEFAULT; }
+function setBg(hex){
+  if (!hexToHsl(hex)) return;
+  applyBg(hex);
+  try { localStorage.setItem("ics-bg", hex); } catch(e){}
+  const d = dashState(); d.bg = hex; saveDash();
+}
+function openBgPicker(){
+  const dlg = document.getElementById("dlg"), body = document.getElementById("dlgBody"); body.replaceChildren();
+  const start = currentBg();
+  const grid = h("div",{class:"bgpick", role:"group", "aria-label":"Colores predefinidos"});
+  const col = h("input",{type:"color", value:start, "aria-label":"Elegir un color"});
+  const txt = h("input",{type:"text", value:start.toUpperCase(), maxlength:"7", "aria-label":"Código HEX"});
+  const paint = () => { grid.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.hex.toLowerCase() === currentBg().toLowerCase() ? "true" : "false")); col.value = currentBg(); txt.value = currentBg().toUpperCase(); };
+  BG_PRESETS.forEach(p => { const v = bgVars(p.hex);
+    grid.append(h("button",{dataset:{hex:p.hex}, onclick:()=>{ setBg(p.hex); paint(); }},
+      h("span",{class:"sw2", style:{background:`linear-gradient(160deg, ${v["--bgL1"]}, ${v["--bgL2"]} 55%, ${v["--bgL3"]})`}}), h("span",{class:"nm"}, p.name))); });
+  col.addEventListener("input", () => { setBg(col.value); paint(); });
+  txt.addEventListener("change", () => { let x = txt.value.trim(); if (!x.startsWith("#")) x = "#" + x; if (hexToHsl(x)) { setBg(x); paint(); } else { toast("Escribe un color en formato HEX, por ejemplo #F29B6C"); txt.value = currentBg().toUpperCase(); } });
+  body.append(h("h3",null,"Color de fondo"),
+    h("p",{style:{margin:"0", color:"var(--muted)", fontSize:"14px"}}, "Elige el color base y el degradado se genera solo, en modo claro y oscuro. Los textos cambian a oscuro o claro para que se lean bien. Solo cambia tu vista."),
+    grid,
+    h("div",{class:"bgcustom"}, col, h("label",{style:{display:"flex", flexDirection:"column", gap:"4px", fontSize:"12.5px", color:"var(--muted)"}}, "Color personalizado (HEX)", txt),
+      h("span",{style:{fontSize:"13px", color:"var(--muted)", flex:"1 1 180px"}}, "Usa el selector o pega el código de vuestro manual de marca.")),
+    h("div",{class:"row"}, h("button",{class:"btn ghost left", onclick:()=>{ setBg(BG_DEFAULT); paint(); }}, "Volver al naranja Inèdit"), h("button",{class:"btn primary", onclick:()=>dlg.close()}, "Listo")));
+  paint();
+  dlg.showModal();
+}
+const isDarkTheme = () => S.theme === "dark" || (S.theme !== "light" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+try { applyBg(localStorage.getItem("ics-bg") || BG_DEFAULT); } catch(e){ applyBg(BG_DEFAULT); }
 
 /* ---------- Main render ---------- */
 function render(){
@@ -1933,14 +2187,18 @@ function remindersDialog(){
 const WINDSOR = "Windsor.ai";
 const IG_FIELDS = ["media_id","timestamp","media_type","media_caption","media_permalink","media_reach","media_views","media_engagement","media_saved","media_shares","media_profile_visits"];
 async function windsorData(input){
-  let r = (await S.mcp.callTool(WINDSOR, "get_data", input, {cache:false})).payload || {};
+  let r = (await S.mcp.callTool(WINDSOR, "get_data", input, {cache:false})).payload;
   const started = Date.now();
-  while (r && r.status === "pending" && Date.now() - started < 300000){
+  while (r && !Array.isArray(r) && r.status === "pending" && Date.now() - started < 300000){
     await new Promise(res => setTimeout(res, Math.min(60, Math.max(5, r.poll_after_seconds || 10)) * 1000));
-    r = (await S.mcp.callTool(WINDSOR, "get_data", input, {cache:false})).payload || {};
+    r = (await S.mcp.callTool(WINDSOR, "get_data", input, {cache:false})).payload;
   }
-  if (!r || r.status !== "done" || !Array.isArray(r.data)) throw {code: r && r.status === "pending" ? "still_pending" : "bad_payload"};
-  return r.data;
+  // Windsor.ai get_data returns the rows as a plain array on success; only a long-running
+  // pull returns {status:"pending", poll_after_seconds}. Some connectors may still wrap
+  // the rows as {data:[...]} — accept that shape too, but never require a "done" status.
+  if (Array.isArray(r)) return r;
+  if (r && Array.isArray(r.data)) return r.data;
+  throw {code: r && r.status === "pending" ? "still_pending" : "bad_payload"};
 }
 function guessProduct(t){ const x = norm(t); return /neostampa/.test(x) ? "neostampa" : /neotextil/.test(x) ? "neotextil" : /neocatalog/.test(x) ? "neocatalog" : /neomatch/.test(x) ? "neomatch" : "inedit"; }
 function guessLang(t){ const x = " " + norm(t) + " "; const es = (x.match(/ (el|la|los|las|para|con|nuestro|nuestra|que|una) /g)||[]).length, pt = (x.match(/ (nos|estande|voce|nossa|conheca|ao|vivo|tudo|isso) /g)||[]).length, en = (x.match(/ (the|and|your|our|with|you|every|to) /g)||[]).length; return pt > es && pt > en ? "pt" : es > en ? "es" : "en"; }
@@ -4396,6 +4654,7 @@ function releasesContext(){
 document.getElementById("dlg").addEventListener("close", () => { document.getElementById("dlg").onpaste = null; });
 new MutationObserver(muts => { if (S.uiLang !== "en" && !S._wasEn) return; for (const m of muts) m.addedNodes.forEach(n => trNode(n)); }).observe(document.body, {childList:true, subtree:true});
 applyTheme(S.theme);
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if ((S.theme || "auto") === "auto") renderRail(); }); } catch(e){}
 try { if (localStorage.getItem("ics-rail-mini") === "1") document.body.classList.add("rail-mini"); } catch(e){}
 document.getElementById("scrim").addEventListener("click", () => setNavOpen(false));
 document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("nav-open")) setNavOpen(false); });
