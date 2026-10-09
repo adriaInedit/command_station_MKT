@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -943,6 +944,25 @@ dialog{background:linear-gradient(150deg, rgba(255,255,255,.86), rgba(255,255,25
   :root:not([data-theme="light"]) .rail::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.10); background-image:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
   :root:not([data-theme="light"]) .rail:hover::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.22)}
 }
+/* Editable table columns */
+.lhead{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:0 0 10px}
+.lhead h3{margin:0}
+.lhead .btn{margin-left:auto}
+.lhead .cnt{color:var(--muted); font-size:13px}
+.table th.num,.table td.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.lhead + .tablewrap .table th,.list .tablewrap .table th{white-space:nowrap}
+.colpick{list-style:none; margin:0; padding:0 2px 0 0; display:flex; flex-direction:column; gap:6px; max-height:min(56vh,480px); overflow:auto}
+.colpick li{display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:14px; background:rgba(255,255,255,.5); border:1px solid var(--lg-edge); box-shadow:inset 0 1px 0 var(--lg-hi)}
+.colpick li.off label{color:var(--muted); font-weight:500}
+.colpick label{color:var(--ink); flex:1; min-width:0; font-size:14px; font-weight:600; cursor:pointer; display:flex; flex-direction:column; gap:1px}
+.colpick small{font-weight:400; color:var(--muted); font-size:12px}
+.colpick input[type=checkbox]{width:18px; height:18px; accent-color:var(--accent); flex:none}
+.colpick .tb{border:1px solid var(--lg-edge); background:rgba(255,255,255,.65); color:var(--ink); width:32px; height:32px; border-radius:10px; display:grid; place-items:center; flex:none}
+.colpick .tb:hover:not(:disabled){background:#fff}
+.colpick .tb:disabled{opacity:.3; cursor:default}
+.colpick .tb svg{width:16px; height:16px}
+:root[data-theme="dark"] .colpick li,:root[data-theme="dark"] .colpick .tb{background:rgba(255,255,255,.06)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .colpick li,:root:not([data-theme="light"]) .colpick .tb{background:rgba(255,255,255,.06)} }
 /* Collapsible sections */
 .colsec{margin-top:28px; padding-top:18px; border-top:1px solid var(--line)}
 .colhead{display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; width:100%; border:0; background:transparent; padding:4px 0; margin:0 0 10px; text-align:left; color:inherit; cursor:pointer; font:inherit}
@@ -1497,7 +1517,7 @@ async function loadDashRemote(){
     if (!S.userId) return;
     const snap = await S.db.collection("data/users/" + S.userId).doc("dashboard").get();
     const v = snap && (typeof snap.data === "function" ? snap.data() : snap);
-    if (snap && snap.exists !== false && v && Array.isArray(v.order)){ S.dash = JSON.parse(JSON.stringify({order:v.order, hidden:v.hidden||[], size:v.size||{}, notes:v.notes||[], bg:v.bg||null})); if (S.dash.bg && hexToHsl(S.dash.bg)) { applyBg(S.dash.bg); try { localStorage.setItem("ics-bg", S.dash.bg); } catch(e){} } try { localStorage.setItem("ics-dash", JSON.stringify(S.dash)); } catch(e){} if (S.view === "home") render(); }
+    if (snap && snap.exists !== false && v && Array.isArray(v.order)){ S.dash = JSON.parse(JSON.stringify({order:v.order, hidden:v.hidden||[], size:v.size||{}, notes:v.notes||[], bg:v.bg||null, cols:v.cols||null})); if (S.dash.bg && hexToHsl(S.dash.bg)) { applyBg(S.dash.bg); try { localStorage.setItem("ics-bg", S.dash.bg); } catch(e){} } try { localStorage.setItem("ics-dash", JSON.stringify(S.dash)); } catch(e){} if (S.view === "home" || S.view === "results") render(); }
   } catch(e){}
 }
 const wsize = id => { const d = dashState(); return d.size[id] || WD[id].size; };
@@ -1698,7 +1718,7 @@ function viewHome(){
       h("button",{class:"roundbtn", title:"Color de fondo", "aria-label":"Cambiar el color de fondo", onclick:openBgPicker}, icon("palette")),
       h("button",{class:"roundbtn", title:"Nuevo contenido", "aria-label":"Nuevo contenido", onclick:()=>go("command")}, icon("plus")))));
   if (editing) wrap.append(h("div",{class:"editbar"}, h("p",null, "Arrastra los widgets para reordenarlos, o usa las flechas. Elige el ancho y oculta los que no uses. Los cambios se guardan solos y solo los ves tú."),
-    h("button",{class:"btn small ghost", onclick:async ()=>{ if (await askConfirm("¿Restablecer el panel a su diseño inicial? Tus tareas de Prioridades se mantienen.", "Restablecer")){ const notes = d.notes, bg = d.bg; S.dash = Object.assign(DEFAULT_DASH(), {notes, bg}); saveDash(); render(); } }}, icon("reset"), " Restablecer"),
+    h("button",{class:"btn small ghost", onclick:async ()=>{ if (await askConfirm("¿Restablecer el panel a su diseño inicial? Tus tareas de Prioridades se mantienen.", "Restablecer")){ const notes = d.notes, bg = d.bg, cols = d.cols; S.dash = Object.assign(DEFAULT_DASH(), {notes, bg, cols}); saveDash(); render(); } }}, icon("reset"), " Restablecer"),
     h("button",{class:"btn small primary", onclick:()=>{ S.dashEdit = false; render(); }}, "Listo")));
   if (S.dbReady && !S.db) wrap.append(h("div",{class:"notice"}, "Sin conexión al almacenamiento: el panel se guarda solo en este navegador."));
   const grid = h("div",{class:"dgrid" + (editing ? " editing" : "")});
@@ -2355,15 +2375,95 @@ function viewResults(){
   if (!m.length){
     wrap.append(h("p",{class:"empty"}, tab === "instagram" || tab === "todo" ? "Pulsa \"Actualizar datos\" para traer las publicaciones de Instagram de los últimos 6 meses." : `Todavía no hay datos de ${PLATFORMS[tab].name}. Exporta las estadísticas y guárdalas en OneDrive › Inèdit Command Station › Resultados; se importan con /sync.`));
   } else {
-    const tb = h("tbody",null);
-    m.slice().sort((a,b) => String(b.date).localeCompare(String(a.date))).forEach(d => tb.append(h("tr",null,
-      h("td",null, fmtDate(d.date)), isSocial ? null : h("td",null, PLATFORMS[platOf(d)]?.name || ""), h("td",null, d.type || ""), h("td",null, h("a",{href:d.permalink, target:"_blank", rel:"noopener"}, String(d.caption).replace(/\s+/g," ").slice(0, 70) + (nchars(d.caption) > 70 ? "…" : ""))),
-      h("td",null, Math.round(d.reach||0)), h("td",null, ((d.er||0)*100).toFixed(1) + " %"), h("td",null, d.saved != null ? Math.round(d.saved) : "—"), h("td",null, Math.round(d.shares||0)))));
-    wrap.append(h("div",{class:"list"}, h("h3",null,"Publicaciones"), h("div",{class:"tablewrap"}, h("table",{class:"table"},
-      h("thead",null, h("tr",null, h("th",null,"Fecha"), isSocial ? null : h("th",null,"Red"), h("th",null,"Tipo"), h("th",null,"Publicación"), h("th",null,"Alcance / impresiones"), h("th",null,"Engagement"), h("th",null,"Guardados"), h("th",null,"Compartidos"))), tb))));
+    const sorted = m.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)));
+    wrap.append(h("div",{class:"list"}, h("div",{class:"lhead"}, h("h3",null,"Publicaciones"), h("span",{class:"cnt"}, `${sorted.length} publicaciones`), colButton("posts")),
+      colTable("posts", sorted, {skip: isSocial ? ["platform"] : []})));
   }
   if (tab === "todo") wrap.append(viewSales());
   return wrap;
+}
+
+/* ---------- Editable table columns (saved per person with the dashboard) ---------- */
+ICONS.cols = '<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.5 4.5v15M14.5 4.5v15"/>';
+ICONS.up = '<path d="m6 14.5 6-6 6 6"/>';
+ICONS.down = '<path d="m6 9.5 6 6 6-6"/>';
+const fmtInt = n => n == null || n === "" ? "—" : Math.round(+n || 0).toLocaleString("es-ES");
+const POST_COLS = [
+  {id:"date", label:"Fecha", def:true, td:d => fmtDate(d.date)},
+  {id:"time", label:"Hora", td:d => d.time || "—"},
+  {id:"platform", label:"Red", def:true, td:d => PLATFORMS[platOf(d)]?.name || "", hint:"Se oculta sola en las pestañas de una sola red"},
+  {id:"type", label:"Tipo", def:true, td:d => d.type || ""},
+  {id:"caption", label:"Publicación", def:true, td:d => h("a",{href:d.permalink, target:"_blank", rel:"noopener"}, String(d.caption || "").replace(/\s+/g," ").slice(0, 70) + (nchars(d.caption || "") > 70 ? "…" : ""))},
+  {id:"product", label:"Producto", td:d => PR[d.product]?.name || "—"},
+  {id:"lang", label:"Idioma", td:d => (d.lang || "—").toUpperCase()},
+  {id:"reach", label:"Alcance / impresiones", def:true, num:true, td:d => fmtInt(d.reach), hint:"En LinkedIn son impresiones"},
+  {id:"views", label:"Visualizaciones", num:true, td:d => fmtInt(d.views)},
+  {id:"engagement", label:"Interacciones", num:true, td:d => fmtInt(d.engagement)},
+  {id:"er", label:"Engagement", def:true, num:true, td:d => ((d.er || 0) * 100).toFixed(1).replace(".", ",") + " %", hint:"Interacciones ÷ alcance"},
+  {id:"clicks", label:"Clics", num:true, td:d => fmtInt(d.clicks)},
+  {id:"saved", label:"Guardados", def:true, num:true, td:d => fmtInt(d.saved)},
+  {id:"shares", label:"Compartidos", def:true, num:true, td:d => fmtInt(d.shares)},
+  {id:"profile_visits", label:"Visitas al perfil", num:true, td:d => fmtInt(d.profile_visits)}
+];
+const SALES_COLS = [
+  {id:"date", label:"Fecha de cierre", def:true, td:d => fmtDate(d.date)},
+  {id:"stage", label:"Fase", def:true, td:d => stageChip(d)},
+  {id:"owner", label:"Propietario", def:true, td:d => d.owner || "—"},
+  {id:"account", label:"Cuenta", def:true, td:d => d.account || "—"},
+  {id:"country", label:"País", def:true, td:d => d.country || "—"},
+  {id:"zone", label:"Zona de objetivo", td:d => countryGroupOf(d.country), hint:"La agrupación de Objetivos por país"},
+  {id:"opportunity", label:"Oportunidad", def:true, td:d => d.opportunity || "—"},
+  {id:"amount", label:"Importe", def:true, num:true, td:d => fmtMoney(d.amount)},
+  {id:"quarter", label:"Trimestre", td:d => d.quarter || "—"},
+  {id:"year", label:"Año", td:d => yearOf(d) || "—"},
+  {id:"imported", label:"Importado el", td:d => d.importedAt ? new Date(d.importedAt).toLocaleDateString("es-ES") : "—"}
+];
+const COLSETS = {posts:{name:"Publicaciones", cols:POST_COLS}, sales:{name:"Ventas", cols:SALES_COLS}};
+function colCfg(t){
+  const all = COLSETS[t].cols, ids = all.map(c => c.id);
+  const src = S.dash && S.dash.cols && S.dash.cols[t] || (dashState().cols || {})[t];
+  const order = src && Array.isArray(src.order) ? src.order.filter(id => ids.includes(id)) : ids.slice();
+  ids.forEach(id => { if (!order.includes(id)) order.push(id); });
+  const shown = src && Array.isArray(src.shown) ? src.shown.filter(id => ids.includes(id)) : all.filter(c => c.def).map(c => c.id);
+  return {order, shown};
+}
+function saveCols(t, cfg){ const d = dashState(); d.cols = Object.assign({}, d.cols || {}, {[t]: cfg}); saveDash(); }
+function colTable(t, rows, opts){
+  const skip = (opts && opts.skip) || [], cfg = colCfg(t), all = COLSETS[t].cols;
+  const vis = cfg.order.filter(id => cfg.shown.includes(id) && !skip.includes(id)).map(id => all.find(c => c.id === id));
+  if (!vis.length) return h("div",{class:"notice"}, "No hay columnas visibles. ", h("button",{class:"btn small", onclick:()=>openColPicker(t)}, "Elegir columnas"));
+  const tb = h("tbody",null);
+  rows.forEach(d => tb.append(h("tr",null, vis.map(c => { let v; try { v = c.td(d); } catch(e){ v = "—"; } return h("td",{class: c.num ? "num" : null}, v); }))));
+  return h("div",{class:"tablewrap"}, h("table",{class:"table"}, h("thead",null, h("tr",null, vis.map(c => h("th",{class: c.num ? "num" : null}, c.label)))), tb));
+}
+function colButton(t){ return h("button",{class:"btn small", title:"Elegir y ordenar las columnas", onclick:()=>openColPicker(t)}, icon("cols"), " Columnas"); }
+function openColPicker(t){
+  const dlg = document.getElementById("dlg"), body = document.getElementById("dlgBody"), all = COLSETS[t].cols;
+  const draw = (focusId) => {
+    const cfg = colCfg(t);
+    const list = h("ul",{class:"colpick"});
+    cfg.order.forEach((id, i) => {
+      const c = all.find(x => x.id === id), on = cfg.shown.includes(id);
+      const cb = h("input",{type:"checkbox", id:"col-" + id}); cb.checked = on;
+      cb.addEventListener("change", () => { saveCols(t, {order:cfg.order, shown: cb.checked ? [...cfg.shown, id] : cfg.shown.filter(x => x !== id)}); draw("col-" + id); render(); });
+      const mv = dir => { const o = cfg.order.slice(), j = i + dir; if (j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; saveCols(t, {order:o, shown:cfg.shown}); draw(`mv-${dir < 0 ? "up" : "down"}-${id}`); render(); };
+      list.append(h("li",{class: on ? null : "off"}, cb,
+        h("label",{for:"col-" + id}, c.label, c.hint ? h("small",null, c.hint) : null),
+        h("button",{class:"tb", id:"mv-up-" + id, type:"button", "aria-label":"Subir " + c.label, disabled: i === 0, onclick:()=>mv(-1)}, icon("up")),
+        h("button",{class:"tb", id:"mv-down-" + id, type:"button", "aria-label":"Bajar " + c.label, disabled: i === cfg.order.length - 1, onclick:()=>mv(1)}, icon("down"))));
+    });
+    const n = cfg.shown.length;
+    body.replaceChildren(
+      h("h3",null, `Columnas · ${COLSETS[t].name}`),
+      h("p",{style:{margin:"0", color:"var(--muted)", fontSize:"14px"}}, `Marca las columnas que quieres ver y ordénalas con las flechas. ${n} de ${all.length} visibles. Se guarda en tu perfil.`),
+      list,
+      h("div",{class:"row"},
+        h("button",{class:"btn ghost left", onclick:()=>{ const d = dashState(); if (d.cols) delete d.cols[t]; saveDash(); draw(); render(); }}, "Restablecer"),
+        h("button",{class:"btn primary", onclick:()=>dlg.close()}, "Listo")));
+    if (focusId) setTimeout(() => { const el = document.getElementById(focusId); (el && !el.disabled ? el : document.getElementById("col-" + focusId.replace(/^mv-(up|down)-/, "")))?.focus(); }, 0);
+  };
+  draw();
+  dlg.showModal();
 }
 
 /* ---------- Objetivo anual de ventas ---------- */
@@ -2729,11 +2829,8 @@ function viewSales(){
   if (f.length) wrap.append(h("div",{style:{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:"20px", marginBottom:"18px"}},
     h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por propietario"), barList(byGroup("owner"))),
     h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por país"), barList(byGroup("country")))));
-  const tb = h("tbody",null);
-  f.slice().sort((a,b) => String(b.date).localeCompare(String(a.date))).forEach(d => tb.append(h("tr",null,
-    h("td",null, fmtDate(d.date)), h("td",null, stageChip(d)), h("td",null, d.owner||"—"), h("td",null, d.account||"—"), h("td",null, d.country||"—"), h("td",null, d.opportunity||"—"), h("td",null, fmtMoney(d.amount)))));
-  wrap.append(h("div",{class:"tablewrap"}, h("table",{class:"table"},
-    h("thead",null, h("tr",null, h("th",null,"Fecha"), h("th",null,"Fase"), h("th",null,"Propietario"), h("th",null,"Cuenta"), h("th",null,"País"), h("th",null,"Oportunidad"), h("th",null,"Importe"))), tb)));
+  const fs = f.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)));
+  wrap.append(h("div",{class:"lhead"}, h("span",{class:"cnt"}, `${fs.length.toLocaleString("es-ES")} oportunidades en la tabla`), colButton("sales")), colTable("sales", fs));
   return wrap;
 }
 
@@ -4074,12 +4171,45 @@ function designFacts(ctx){
   return {p, colors, logo, typo, extra};
 }
 function dsName(){ const n = S.brandCfg && S.brandCfg.dsName ? S.brandCfg.dsName.trim() : ""; return n ? `"${n}"` : "de Inèdit"; }
+/* Email / newsletter brief: the whole email, block by block, in the same structure as the Salesforce (Pardot) template */
+async function designBriefEmail(idx, post, fk, d, lang){
+  const kind = fk === "newsletter" ? "newsletter" : "email";
+  const th = SF_THEME[d.p.id] || SF_THEME.inedit;
+  const es = post.lang === "es";
+  const input = [{role:"user", content:`Eres el director de arte de Inèdit Software. Escribe un brief para pegar tal cual en Claude Design, que diseñará el ${kind} COMPLETO de arriba abajo, no solo la cabecera. El diseño tiene que seguir la misma estructura que la plantilla de email de Salesforce (Pardot) de la casa, porque después se maquetará en ella con el botón "HTML para Salesforce".
+Escribe el brief en español, pero los textos del ${kind} en ${lang}. Sin introducción ni comentarios: solo el brief, con estas secciones y en este orden:
+1. Qué crear (una frase): un ${kind} de una sola columna de 600 px de ancho, con todos los bloques del punto 3 en ese orden.
+2. Formato y entrega: (a) la maqueta completa del ${kind} en una sola imagen vertical de 1200 px de ancho (el doble de 600 px, para pantallas retina), con todos los bloques; (b) la imagen del banner por separado, 1200 × 400 px, sin texto pequeño dentro; (c) si propones una imagen en el cuerpo, 1200 × 675 px. Todo exportable en PNG.
+3. Estructura y textos, bloque a bloque y en este orden. Escribe los textos exactos entre comillas, sacados del texto de abajo, y reparte TODO el contenido del texto entre los bloques; no inventes cifras, fechas ni afirmaciones que no estén en él:
+   a. Asunto (máx. 60 caracteres) y preheader (máx. 110 caracteres). Solo como referencia: no aparecen dentro del diseño.
+   b. Barra de logos sobre fondo blanco: logo Fiery | Inèdit a la izquierda${d.p.id !== "inedit" ? ` y el logo del producto ${d.p.name} a la derecha` : ""}.
+   c. Banner: franja a todo el ancho en ${th.main} con la imagen del banner; antetítulo pequeño (versión, evento o tema, o nada) y título del banner de máximo 6 palabras, en blanco.
+   d. Bloque principal sobre fondo blanco: antetítulo en mayúsculas de máximo 6 palabras (o nada) y titular de máximo 10 palabras.
+   e. Nota personal: saludo "${es ? "Hola" : "Hi"} {{Recipient.FirstName}}," y de 2 a 3 párrafos cortos con el cuerpo del mensaje.
+   f. Sección secundaria sobre fondo ${th.tint} (solo si el texto da para ello): título y 1 o 2 párrafos.
+   g. Franja de CTA a todo el ancho en ${th.main}: titular, una frase opcional y un botón blanco en forma de píldora con el texto en ${th.main} (máximo 4 palabras); enlace secundario opcional debajo.
+   h. Despedida: una frase de cierre y la firma "${es ? "Un saludo, El equipo de Inèdit Software" : "Warm regards, The Inèdit Software team"}".
+   i. Pie sobre fondo ${th.tint}: enlaces a YouTube, Facebook, Instagram y LinkedIn; "Copyright © ${new Date().getFullYear()} Inèdit Software, S.L."; Carrer del Rocà, 6 · 08394 Sant Vicenç de Montalt · Barcelona, Spain; T. (+34) 937 912 821 · www.inedit.com; y los enlaces "${es ? "Darse de baja" : "Unsubscribe"}" y "${es ? "Actualizar preferencias" : "Update preferences"}".
+4. Composición: jerarquía clara, márgenes laterales de 48 px (a 600 px), mucho aire entre bloques y lectura fácil de arriba abajo.
+5. Imagen del banner: qué mostrar (impresión textil real relacionada con el tema: prendas, tejidos, máquinas o interfaz de ${d.p.id === "inedit" ? "los productos" : d.p.name}); si se usa una captura de software, indicar que la subiré yo. Nada de fotos genéricas de oficina.
+6. Marca: usa el sistema de diseño ${dsName()} que ya está configurado en Claude Design; sus colores, tipografía, logos y componentes mandan sobre cualquier otra indicación de estilo de este brief. Como referencia: ${d.colors} ${d.logo} ${d.extra}
+7. Requisitos de email: todo el texto como texto real, nunca dentro de imágenes (salvo el título del banner si va sobre la foto); cuerpo de al menos 15 px; botón de al menos 44 px de alto; buen contraste; que se entienda con las imágenes desactivadas.
+8. Evitar: dos columnas, textos largos dentro de imágenes, más de un color de producto, efectos o deformaciones del logo, palabras exageradas (amazing, revolutionary, increíble).
+
+TEXTO DEL ${kind.toUpperCase()}:
+${post.content}`}];
+  const dref = newDesignRef();
+  await runTurn({label:`Brief para Claude Design · ${dref}`, channel:post.channel, product:post.product, type:post.type, lang:post.lang, aux:true, design:true, forIdx:idx, ref:dref}, input);
+  const m = S.thread[S.thread.length - 1];
+  if (m && m.design && !m.error && m.content){ m.content = `TÍTULO DEL DISEÑO (ponlo exactamente así en Claude Design): ${dref} · ${firstLine(post.content).slice(0, 60)}\n\n` + m.content; render(); }
+}
 async function designBrief(idx){
   if (S.busy || !S.sample) return;
   const post = S.thread[idx];
   const ctx = Object.assign({}, S.threadCtx || {}, {product: post.product || (S.threadCtx||{}).product});
   const fk = formatKey(ctx); const d = designFacts(ctx);
   const lang = post.lang === "es" ? "español" : post.lang === "both" ? "inglés (y una variante en español)" : "inglés";
+  if (fk === "newsletter" || fk === "emailing") return designBriefEmail(idx, post, fk, d, lang);
   const input = [{role:"user", content:`Eres el director de arte de Inèdit Software. Escribe un brief para pegar tal cual en Claude Design, que creará el diseño de esta pieza.
 Escribe el brief en español, pero los textos que aparecen DENTRO del diseño en ${lang}. Sin introducción ni comentarios: solo el brief, con estas secciones y en este orden:
 1. Qué crear (una frase: tipo de pieza, red y objetivo).
@@ -4722,3 +4852,4 @@ renderRail(); render(); setFoot();
 </body>
 </html>
 
+</body></html>
