@@ -2245,9 +2245,146 @@ async function windsorData(input){
   // Windsor.ai get_data returns the rows as a plain array on success; only a long-running
   // pull returns {status:"pending", poll_after_seconds}. Some connectors may still wrap
   // the rows as {data:[...]} — accept that shape too, but never require a "done" status.
+  if (typeof r === "string"){ try { r = JSON.parse(r); } catch(e){} }
+  const rows = windsorRows(r);
+  if (rows) return rows;
+  const msg = r && ((r.error && (r.error.message || r.error)) || r.message || r.detail);
+  console.warn("Windsor.ai get_data: unexpected payload", r);
+  throw {code: r && r.status === "pending" ? "still_pending" : "bad_payload", message: typeof msg === "string" ? msg.slice(0, 160) : ""};
+}
+// Rows may come as a plain array or wrapped by the connector ({data}, {result}, {rows}…), sometimes one level deeper
+function windsorRows(r, depth){
+  depth = depth || 0;
   if (Array.isArray(r)) return r;
-  if (r && Array.isArray(r.data)) return r.data;
-  throw {code: r && r.status === "pending" ? "still_pending" : "bad_payload"};
+  if (!r || typeof r !== "object" || depth > 2) return null;
+  for (const k of ["data", "result", "results", "rows", "items", "records"]){ const v = windsorRows(r[k], depth + 1); if (v) return v; }
+  return null;
+}
+/* ---------- Social exports import (LinkedIn, Facebook, Instagram) — parsed in the browser ---------- */
+const XLSX_SRC = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+let _xlsxP = null;
+function loadXlsx(){
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (!_xlsxP) _xlsxP = new Promise((res, rej) => { const s = document.createElement("script"); s.src = XLSX_SRC; s.onload = () => window.XLSX ? res(window.XLSX) : rej(new Error("no se ha podido cargar el lector de Excel")); s.onerror = () => { _xlsxP = null; rej(new Error("no se ha podido cargar el lector de Excel")); }; document.head.appendChild(s); });
+  return _xlsxP;
+}
+// Column names in the LinkedIn and Meta exports (English and Spanish), most specific first
+const SOC_COLS = {
+  id:["post id","id de la publicacion","identificador de la publicacion","media id"],
+  caption:["post title","titulo de la publicacion","description","descripcion","message","mensaje","title","titulo","texto"],
+  permalink:["post link","enlace de la publicacion","permalink","enlace permanente","link","enlace","url"],
+  type:["content type","tipo de contenido","media type","post type","tipo de publicacion","tipo"],
+  date:["created date","fecha de creacion","publish time","hora de publicacion","fecha de publicacion","date","fecha"],
+  reach:["reach","alcance","cuentas alcanzadas"],
+  impressions:["impressions","impresiones"],
+  views:["views","visualizaciones","reproducciones","video views"],
+  clicks:["clicks","clics","total clicks","clics totales","link clicks","clics en el enlace"],
+  likes:["likes","reactions","reacciones","me gusta"],
+  comments:["comments","comentarios"],
+  shares:["reposts","shares","compartidos","veces compartido","veces que se compartio","republicaciones"],
+  saved:["saves","guardados","veces guardado"],
+  er:["engagement rate","tasa de interaccion","porcentaje de interaccion","tasa de engagement"]
+};
+const nh = s => norm(String(s == null ? "" : s)).replace(/[^a-z0-9()% ]+/g, " ").replace(/\s+/g, " ").trim();
+function mapHeader(row){
+  const keys = row.map(nh), map = {}; let hits = 0;
+  Object.entries(SOC_COLS).forEach(([f, syn]) => {
+    const idx = [];
+    syn.forEach(s => keys.forEach((k, i) => { if (!k || idx.includes(i) || / and | y /.test(k)) return; if (k === s || k.startsWith(s + " ") || k.startsWith(s + "(")) idx.push(i); }));
+    if (idx.length){ map[f] = idx; hits++; }
+  });
+  return {map, hits, keys};
+}
+const cellOf = (r, map, f) => { for (const i of (map[f] || [])){ const v = r[i]; if (v !== "" && v != null) return v; } return null; };
+function toNum(v){
+  if (v == null || v === "") return null;
+  if (typeof v === "number") return isFinite(v) ? v : null;
+  let s = String(v).replace(/[%\s\u00a0]/g, "");
+  if (/^-?[1-9]\d{0,2}([.,]\d{3})+$/.test(s)) s = s.replace(/[.,]/g, "");
+  else s = s.replace(",", ".");
+  const n = parseFloat(s); return isNaN(n) ? null : n;
+}
+function toRate(v){ if (v == null || v === "") return null; const pct = typeof v === "string" && v.includes("%"); const n = toNum(v); if (n == null) return null; return pct || n > 1 ? n / 100 : n; }
+function toYmd(v, pl){
+  if (v == null || v === "") return null;
+  if (v instanceof Date) return isNaN(v) ? null : ymd(v);
+  if (typeof v === "number"){ const d = new Date(Math.round((v - 25569) * 864e5)); return isNaN(d) ? null : `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`; }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+  if (m){ let a = +m[1], b = +m[2], y = +m[3]; if (y < 100) y += 2000; let mo, da;
+    // LinkedIn and Meta export dates as MM/DD/YYYY; a date in the future means it was DD/MM
+    if (a > 12){ da = a; mo = b; } else if (b > 12){ mo = a; da = b; } else { mo = a; da = b; if (`${y}-${pad(mo)}-${pad(da)}` > ymd(new Date(Date.now() + 864e5))){ mo = b; da = a; } }
+    return `${y}-${pad(mo)}-${pad(da)}`; }
+  const d = new Date(s); return isNaN(d) ? null : ymd(d);
+}
+function toTime(v){
+  if (v instanceof Date){ const t = `${pad(v.getHours())}:${pad(v.getMinutes())}`; return t === "00:00" ? "" : t; }
+  const m = String(v || "").match(/[T ](\d{1,2}):(\d{2})/); return m ? `${pad(+m[1])}:${m[2]}` : "";
+}
+function hashStr(s){ let x = 2166136261; for (let i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return (x >>> 0).toString(36); }
+function detectPlatform(fileName, rows, map, hint){
+  const f = norm(fileName);
+  if (/linkedin/.test(f)) return "linkedin";
+  if (/instagram|\big\b/.test(f)) return "instagram";
+  if (/facebook|\bfb\b/.test(f)) return "facebook";
+  const links = rows.slice(0, 30).map(r => String(cellOf(r, map, "permalink") || "")).join(" ");
+  if (/linkedin\.com/.test(links)) return "linkedin";
+  if (/instagram\.com/.test(links)) return "instagram";
+  if (/facebook\.com|fb\.watch/.test(links)) return "facebook";
+  return hint || null;
+}
+async function parseSocialFile(file, hint){
+  const X = await loadXlsx();
+  // CSV: read as UTF-8 text and keep every value as text (accents and "1.204"-style numbers stay intact)
+  const wb = /\.csv$/i.test(file.name) ? X.read((await file.text()).replace(/^\uFEFF/, ""), {type:"string", raw:true}) : X.read(await file.arrayBuffer(), {type:"array", cellDates:true});
+  let best = null;
+  wb.SheetNames.forEach(name => {
+    const rows = X.utils.sheet_to_json(wb.Sheets[name], {header:1, raw:true, defval:""});
+    for (let r = 0; r < Math.min(rows.length, 8); r++){
+      const mh = mapHeader(rows[r] || []);
+      if (!mh.map.date || !(mh.map.caption || mh.map.permalink) || !(mh.map.reach || mh.map.impressions || mh.map.views)) continue;
+      const score = mh.hits + (/post|publicac|content|contenido/i.test(name) ? 1 : 0);
+      if (!best || score > best.score) best = {score, rows: rows.slice(r + 1), map: mh.map};
+    }
+  });
+  if (!best) throw new Error("no encuentro la tabla de publicaciones (fecha, texto o enlace, e impresiones o alcance)");
+  const data = best.rows.filter(r => r.some(c => c !== "" && c != null));
+  const pl = detectPlatform(file.name, data, best.map, hint);
+  if (!pl) return {platform:null, docs:[]};
+  const now = Date.now();
+  const docs = data.map(r => {
+    const g = f => cellOf(r, best.map, f), num = f => toNum(g(f));
+    const date = toYmd(g("date"), pl); if (!date) return null;
+    const caption = String(g("caption") || "").trim(), permalink = String(g("permalink") || "").trim();
+    const reach = num("reach") ?? num("impressions") ?? num("views") ?? 0;
+    const likes = num("likes") || 0, comments = num("comments") || 0, shares = num("shares") || 0, clicks = num("clicks"), saved = num("saved");
+    const engagement = likes + comments + shares + (saved || 0) + (pl === "linkedin" ? (clicks || 0) : 0);
+    let er = toRate(g("er")); if (er == null) er = reach ? engagement / reach : 0;
+    const key = String(g("id") || permalink || (date + "|" + caption.slice(0, 80)));
+    return {id: pl.slice(0, 2) + "-" + hashStr(key), platform:pl, date, time: toTime(g("date")), type: String(g("type") || ""), caption, permalink,
+      reach, impressions: num("impressions"), views: num("views"), clicks, likes, comments, shares, saved, engagement, er,
+      product: guessProduct(caption), lang: guessLang(caption), source:"archivo", sourceFile: file.name, fetchedAt: now};
+  }).filter(Boolean);
+  return {platform:pl, docs};
+}
+async function handleSocialFiles(ev){
+  const files = [...(ev.target.files || [])]; ev.target.value = "";
+  if (!files.length || !S.db) return;
+  S.socialImportBusy = true; render();
+  const hint = ["linkedin", "facebook", "instagram"].includes(S.resTab) ? S.resTab : null;
+  const done = [], errs = [];
+  for (const f of files){
+    try {
+      const {platform, docs} = await parseSocialFile(f, hint);
+      if (!platform){ errs.push(`${f.name}: no sé de qué red es. Abre la pestaña de esa red y vuelve a importarlo desde ahí.`); continue; }
+      if (!docs.length){ errs.push(`${f.name}: no tiene publicaciones con fecha`); continue; }
+      for (let i = 0; i < docs.length; i += 40) await Promise.all(docs.slice(i, i + 40).map(d => { const {id, ...data} = d; return S.db.collection("metrics").doc(id).set(data); }));
+      done.push(`${docs.length} publicaciones de ${PLATFORMS[platform].name}`);
+    } catch(e){ errs.push(`${f.name}: ${e && e.message ? e.message : "no se ha podido leer"}`); }
+  }
+  S.socialImportBusy = false; render();
+  toast(done.length ? "Importadas " + done.join(" y ") + (errs.length ? ". " + errs[0] : "") : (errs[0] || "No se ha importado nada"));
 }
 function guessProduct(t){ const x = norm(t); return /neostampa/.test(x) ? "neostampa" : /neotextil/.test(x) ? "neotextil" : /neocatalog/.test(x) ? "neocatalog" : /neomatch/.test(x) ? "neomatch" : "inedit"; }
 function guessLang(t){ const x = " " + norm(t) + " "; const es = (x.match(/ (el|la|los|las|para|con|nuestro|nuestra|que|una) /g)||[]).length, pt = (x.match(/ (nos|estande|voce|nossa|conheca|ao|vivo|tudo|isso) /g)||[]).length, en = (x.match(/ (the|and|your|our|with|you|every|to) /g)||[]).length; return pt > es && pt > en ? "pt" : es > en ? "es" : "en"; }
@@ -2276,7 +2413,7 @@ async function refreshMetrics(){
   } catch(e){
     toast(e && e.code === "needs_reauth" ? "Vuelve a conectar Windsor.ai en claude.ai › Configuración › Conectores." :
       e && (e.code === "server_not_connected" || e.code === "not_in_manifest") ? "Windsor.ai no está conectado a tu cuenta de claude.ai." :
-      e && e.code === "still_pending" ? "Windsor.ai sigue preparando los datos. Vuelve a pulsar en unos minutos." : `No se han podido traer los datos${e && e.code ? " (" + e.code + ")" : ""}`);
+      e && e.code === "still_pending" ? "Windsor.ai sigue preparando los datos. Vuelve a pulsar en unos minutos." : `No se han podido traer los datos${e && e.code ? " (" + e.code + ")" : ""}${e && e.message ? ": " + e.message : ""}`);
   } finally { S.metricsBusy = false; render(); }
 }
 const PLATFORMS = {instagram:{name:"Instagram", channel:"meta"}, linkedin:{name:"LinkedIn", channel:"linkedin"}, facebook:{name:"Facebook", channel:"meta"}};
@@ -2336,28 +2473,28 @@ function viewResults(){
   const isSales = tab === "ventas", isSocial = tab !== "ventas" && tab !== "todo";
   const intro = isSales ? "Ventas importadas desde Salesforce: objetivo anual, lo que se lleva facturado y comparativa con el año anterior."
     : isSocial ? `Resultados de ${PLATFORMS[tab].name}.`
-    : "Métricas reales de vuestras redes: Instagram a través de Windsor.ai, y LinkedIn y Facebook importados desde vuestras exportaciones en OneDrive. El Analista os dice qué funciona y las publicaciones que mejor rinden pasan a Piezas modelo.";
+    : "Métricas reales de vuestras redes, importadas desde las exportaciones de LinkedIn y de Meta Business Suite (Facebook e Instagram). El Analista os dice qué funciona y las publicaciones que mejor rinden pasan a Piezas modelo.";
   wrap.append(h("div",{class:"head"}, h("div",null, h("h2",null,"Resultados y Analista"), h("p",null, intro)),
     isSales ? h("div",{class:"actions"},
       h("input",{type:"file", accept:".csv", id:"salesCsvInput", style:{display:"none"}, onchange:handleSalesCsv}),
       h("button",{class:"btn primary", disabled:!S.db || S.salesImportBusy, onclick:()=>document.getElementById("salesCsvInput").click()}, S.salesImportBusy ? "Importando…" : "Importar CSV de Salesforce"))
     : h("div",{class:"actions"},
-      h("button",{class:"btn", disabled:!S.mcp || S.metricsBusy, onclick:refreshMetrics}, S.metricsBusy ? "Trayendo datos…" : "Actualizar datos"),
+      h("input",{type:"file", accept:".xls,.xlsx,.csv", multiple:true, id:"socialFileInput", style:{display:"none"}, onchange:handleSocialFiles}),
+      h("button",{class:"btn", disabled:!S.db || S.socialImportBusy, title:"Exportaciones de LinkedIn o de Meta Business Suite (.xls, .xlsx o .csv)", onclick:()=>document.getElementById("socialFileInput").click()}, S.socialImportBusy ? "Importando…" : "Importar archivo"),
       h("button",{class:"btn primary", disabled:!S.sample || S.analystBusy || !S.metrics.length, onclick:runAnalyst}, S.analystBusy ? "Analizando…" : "Pedir informe al Analista"))));
   // Tabs
   wrap.append(h("div",{class:"tabs", role:"tablist"}, RES_TABS.map(([id, name]) => {
     const n = id === "ventas" ? S.sales.length : id === "todo" ? null : S.metrics.filter(d => platOf(d) === id).length;
     return h("button",{role:"tab", "aria-selected": tab === id ? "true" : "false", onclick:()=>{ S.resTab = id; render(); }}, name + (n ? ` (${n})` : ""));
   })));
-  if (!isSales && !S.mcp && S.dbReady && (tab === "todo" || tab === "instagram")) wrap.append(h("div",{class:"notice"},"Windsor.ai no está disponible en esta vista. Abre la página publicada en claude.ai con tu cuenta."));
   // Sources
   const srcIg = h("div",{class:"src"}, h("b",null,"Instagram"), h("span",{class:"on"}, "Conectado"), " · inedit_software", cfg.lastRefresh ? h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, "Actualizado " + new Date(cfg.lastRefresh).toLocaleString("es-ES",{day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})) : null);
   const srcPl = pl => { const m = S.metrics.filter(d => platOf(d) === pl); const last = m.reduce((a,d) => Math.max(a, d.fetchedAt || 0), 0);
     return h("div",{class:"src"}, h("b",null, PLATFORMS[pl].name), m.length ? h("span",{class:"on"}, "Importado") : h("span",{class:"off"}, "Sin datos"),
-      h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, m.length ? `${m.length} publicaciones · importado ${new Date(last).toLocaleDateString("es-ES")} desde OneDrive` : "Exporta las estadísticas y guárdalas en OneDrive › Inèdit Command Station › Resultados; se importan con /sync.")); };
+      h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, m.length ? `${m.length} publicaciones · importado ${new Date(last).toLocaleDateString("es-ES")}` : "Exporta las estadísticas y súbelas con «Importar archivo».")); };
   const srcSales = h("div",{class:"src"}, h("b",null,"Ventas (Salesforce)"), S.sales.length ? h("span",{class:"on"}, "Importado") : h("span",{class:"off"}, "Sin datos"),
     h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, S.sales.length ? `${S.sales.length} oportunidades · importado ${new Date(S.sales.reduce((a,d)=>Math.max(a,d.importedAt||0),0)).toLocaleDateString("es-ES")} desde OneDrive` : "Exporta el informe de oportunidades y guárdalo en OneDrive › Ventas Salesforce › Importar; se importan con /ventas."));
-  const srcs = tab === "todo" ? [srcIg, srcPl("linkedin"), srcPl("facebook"), srcSales] : isSales ? [srcSales] : [tab === "instagram" ? srcIg : srcPl(tab)];
+  const srcs = tab === "todo" ? [srcPl("instagram"), srcPl("linkedin"), srcPl("facebook"), srcSales] : isSales ? [srcSales] : [srcPl(tab)];
   wrap.append(h("div",{class:"srcs"}, srcs));
   if (isSales){ wrap.append(salesTargetPanel()); wrap.append(viewSales()); return wrap; }
 
@@ -2373,7 +2510,7 @@ function viewResults(){
   if (rep0) wrap.append(h("div",{class:"list", style:{marginTop:"0"}}, h("h3",null, "Último informe del Analista · " + new Date(rep0.createdAt).toLocaleDateString("es-ES",{day:"numeric", month:"long"})), h("div",{class:"report"}, rep0.text),
     h("button",{class:"btn small", style:{marginTop:"-8px", marginBottom:"18px"}, disabled:!S.db, onclick:()=>saveContent({title:"Informe del Analista · " + new Date(rep0.createdAt).toLocaleDateString("es-ES"), body:rep0.text, kind:"plan", source:"Analista"})}, "Guardar en Contenidos")));
   if (!m.length){
-    wrap.append(h("p",{class:"empty"}, tab === "instagram" || tab === "todo" ? "Pulsa \"Actualizar datos\" para traer las publicaciones de Instagram de los últimos 6 meses." : `Todavía no hay datos de ${PLATFORMS[tab].name}. Exporta las estadísticas y guárdalas en OneDrive › Inèdit Command Station › Resultados; se importan con /sync.`));
+    wrap.append(h("p",{class:"empty"}, `Todavía no hay datos${isSocial ? " de " + PLATFORMS[tab].name : ""}. Exporta las estadísticas (LinkedIn: Análisis › Contenido › Exportar; Meta Business Suite: Estadísticas › Contenido › Exportar datos) y súbelas con «Importar archivo». Puedes subir varios archivos a la vez.`));
   } else {
     const sorted = m.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)));
     wrap.append(h("div",{class:"list"}, h("div",{class:"lhead"}, h("h3",null,"Publicaciones"), h("span",{class:"cnt"}, `${sorted.length} publicaciones`), colButton("posts")),
