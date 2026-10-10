@@ -944,12 +944,21 @@ dialog{background:linear-gradient(150deg, rgba(255,255,255,.86), rgba(255,255,25
   :root:not([data-theme="light"]) .rail::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.10); background-image:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
   :root:not([data-theme="light"]) .rail:hover::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.22)}
 }
+.pl-lbl{font-size:12.5px; font-weight:650; color:var(--muted); margin-right:4px; align-self:center}
 /* Editable table columns */
 .lhead{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin:0 0 10px}
 .lhead h3{margin:0}
 .lhead .btn{margin-left:auto}
 .lhead .cnt{color:var(--muted); font-size:13px}
 .table th.num,.table td.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.table th.th-sort{cursor:pointer; user-select:none}
+.table th.th-sort .th-in{display:inline-flex; align-items:center; gap:5px}
+.table th.num.th-sort .th-in{flex-direction:row-reverse}
+.table th.th-sort .th-arr{opacity:.35; font-size:11px}
+.table th.th-sort:hover .th-arr{opacity:.7}
+.table th.th-sort.on{color:var(--ink)}
+.table th.th-sort.on .th-arr{opacity:1; color:var(--accent)}
+.table th.th-sort:focus-visible{outline:2px solid var(--indigo); outline-offset:-2px}
 .lhead + .tablewrap .table th,.list .tablewrap .table th{white-space:nowrap}
 .colpick{list-style:none; margin:0; padding:0 2px 0 0; display:flex; flex-direction:column; gap:6px; max-height:min(56vh,480px); overflow:auto}
 .colpick li{display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:14px; background:rgba(255,255,255,.5); border:1px solid var(--lg-edge); box-shadow:inset 0 1px 0 var(--lg-hi)}
@@ -1802,6 +1811,7 @@ function openBgPicker(){
 }
 const isDarkTheme = () => S.theme === "dark" || (S.theme !== "light" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
 try { applyBg(localStorage.getItem("ics-bg") || BG_DEFAULT); } catch(e){ applyBg(BG_DEFAULT); }
+try { S.tableSort = JSON.parse(localStorage.getItem("ics-tablesort") || "{}"); } catch(e){ S.tableSort = {}; }
 
 /* ---------- Main render ---------- */
 function render(){
@@ -2379,7 +2389,8 @@ async function handleSocialFiles(ev){
       const {platform, docs} = await parseSocialFile(f, hint);
       if (!platform){ errs.push(`${f.name}: no sé de qué red es. Abre la pestaña de esa red y vuelve a importarlo desde ahí.`); continue; }
       if (!docs.length){ errs.push(`${f.name}: no tiene publicaciones con fecha`); continue; }
-      for (let i = 0; i < docs.length; i += 40) await Promise.all(docs.slice(i, i + 40).map(d => { const {id, ...data} = d; return S.db.collection("metrics").doc(id).set(data); }));
+      const w = await writeDocs("metrics", docs.map(d => { const {id, ...data} = d; return {id, data}; }));
+      if (w.fatal || w.failed) errs.push(`${f.name}: ${w.ok} de ${docs.length} guardadas, vuelve a importarlo`);
       done.push(`${docs.length} publicaciones de ${PLATFORMS[platform].name}`);
     } catch(e){ errs.push(`${f.name}: ${e && e.message ? e.message : "no se ha podido leer"}`); }
   }
@@ -2477,7 +2488,8 @@ function viewResults(){
   wrap.append(h("div",{class:"head"}, h("div",null, h("h2",null,"Resultados y Analista"), h("p",null, intro)),
     isSales ? h("div",{class:"actions"},
       h("input",{type:"file", accept:".csv", id:"salesCsvInput", style:{display:"none"}, onchange:handleSalesCsv}),
-      h("button",{class:"btn primary", disabled:!S.db || S.salesImportBusy, onclick:()=>document.getElementById("salesCsvInput").click()}, S.salesImportBusy ? "Importando…" : "Importar CSV de Salesforce"))
+      h("button",{class:"btn", disabled:!S.sample || S.salesAnalystBusy || !S.sales.length, title:"Analiza las ventas con los filtros que tengas puestos", onclick:runSalesAnalyst}, S.salesAnalystBusy ? "Analizando…" : "Pedir informe al Analista"),
+      h("button",{class:"btn primary", id:"salesImportBtn", disabled:!S.db || S.salesImportBusy, onclick:()=>document.getElementById("salesCsvInput").click()}, S.salesImportBusy ? "Importando…" : "Importar CSV de Salesforce"))
     : h("div",{class:"actions"},
       h("input",{type:"file", accept:".xls,.xlsx,.csv", multiple:true, id:"socialFileInput", style:{display:"none"}, onchange:handleSocialFiles}),
       h("button",{class:"btn", disabled:!S.db || S.socialImportBusy, title:"Exportaciones de LinkedIn o de Meta Business Suite (.xls, .xlsx o .csv)", onclick:()=>document.getElementById("socialFileInput").click()}, S.socialImportBusy ? "Importando…" : "Importar archivo"),
@@ -2496,7 +2508,7 @@ function viewResults(){
     h("div",{style:{color:"var(--muted)", fontSize:"12px", marginTop:"2px"}}, S.sales.length ? `${S.sales.length} oportunidades · importado ${new Date(S.sales.reduce((a,d)=>Math.max(a,d.importedAt||0),0)).toLocaleDateString("es-ES")} desde OneDrive` : "Exporta el informe de oportunidades y guárdalo en OneDrive › Ventas Salesforce › Importar; se importan con /ventas."));
   const srcs = tab === "todo" ? [srcPl("instagram"), srcPl("linkedin"), srcPl("facebook"), srcSales] : isSales ? [srcSales] : [srcPl(tab)];
   wrap.append(h("div",{class:"srcs"}, srcs));
-  if (isSales){ wrap.append(salesTargetPanel()); wrap.append(viewSales()); return wrap; }
+  if (isSales){ const rs = S.reports.find(r => r.kind === "sales"); if (rs) wrap.append(reportBox(rs, "salesReport", "Último informe de ventas")); wrap.append(salesTargetPanel()); wrap.append(viewSales()); return wrap; }
 
   const m = isSocial ? S.metrics.filter(d => platOf(d) === tab) : S.metrics;
   if (m.length){
@@ -2506,7 +2518,7 @@ function viewResults(){
       : [["Publicaciones", m.length], ...Object.keys(PLATFORMS).filter(pl => m.some(d => platOf(d) === pl)).map(pl => { const x = m.filter(d => platOf(d) === pl); return [`Engagement medio · ${PLATFORMS[pl].name}`, (x.reduce((s,d)=>s+(d.er||0),0)/x.length*100).toFixed(1) + " %"]; }), ["Compartidos", Math.round(tot("shares"))]];
     wrap.append(h("div",{class:"kpis"}, kp.map(([l,v]) => h("div",{class:"kpi"}, h("div",{class:"v"}, v), h("div",{class:"l"}, l)))));
   }
-  const rep0 = S.reports[0];
+  const rep0 = S.reports.find(r => r.kind !== "sales");
   if (rep0) wrap.append(h("div",{class:"list", style:{marginTop:"0"}}, h("h3",null, "Último informe del Analista · " + new Date(rep0.createdAt).toLocaleDateString("es-ES",{day:"numeric", month:"long"})), h("div",{class:"report"}, rep0.text),
     h("button",{class:"btn small", style:{marginTop:"-8px", marginBottom:"18px"}, disabled:!S.db, onclick:()=>saveContent({title:"Informe del Analista · " + new Date(rep0.createdAt).toLocaleDateString("es-ES"), body:rep0.text, kind:"plan", source:"Analista"})}, "Guardar en Contenidos")));
   if (!m.length){
@@ -2543,35 +2555,71 @@ const POST_COLS = [
   {id:"profile_visits", label:"Visitas al perfil", num:true, td:d => fmtInt(d.profile_visits)}
 ];
 const SALES_COLS = [
-  {id:"date", label:"Fecha de cierre", def:true, td:d => fmtDate(d.date)},
-  {id:"stage", label:"Fase", def:true, td:d => stageChip(d)},
-  {id:"owner", label:"Propietario", def:true, td:d => d.owner || "—"},
-  {id:"account", label:"Cuenta", def:true, td:d => d.account || "—"},
-  {id:"country", label:"País", def:true, td:d => d.country || "—"},
-  {id:"zone", label:"Zona de objetivo", td:d => countryGroupOf(d.country), hint:"La agrupación de Objetivos por país"},
-  {id:"opportunity", label:"Oportunidad", def:true, td:d => d.opportunity || "—"},
-  {id:"amount", label:"Importe", def:true, num:true, td:d => fmtMoney(d.amount)},
-  {id:"quarter", label:"Trimestre", td:d => d.quarter || "—"},
-  {id:"year", label:"Año", td:d => yearOf(d) || "—"},
-  {id:"imported", label:"Importado el", td:d => d.importedAt ? new Date(d.importedAt).toLocaleDateString("es-ES") : "—"}
+  {id:"date", label:"Fecha de cierre", def:true, td:d => fmtDate(d.date), sort:d => d.date || ""},
+  {id:"created", label:"Fecha de creación", def:true, td:d => d.created ? fmtDate(d.created) : "—", hint:"Columna «Fecha de creación» del informe de Salesforce", sort:d => d.created || ""},
+  {id:"modified", label:"Última modificación", def:true, td:d => d.modified ? fmtDate(d.modified) : "—", hint:"Columna «Last Modified Date» del informe de Salesforce", sort:d => d.modified || ""},
+  {id:"stage", label:"Fase", def:true, td:d => stageChip(d), sort:d => d.stage || ""},
+  {id:"owner", label:"Propietario", def:true, td:d => d.owner || "—", sort:d => norm(d.owner)},
+  {id:"account", label:"Cuenta", def:true, td:d => d.account || "—", sort:d => norm(d.account)},
+  {id:"recordType", label:"Tipo de cuenta", def:true, td:d => d.recordType || "—", hint:"Columna «Account Record Type» del informe de Salesforce", sort:d => norm(d.recordType)},
+  {id:"country", label:"País", def:true, td:d => d.country || "—", sort:d => norm(d.country)},
+  {id:"zone", label:"Zona de objetivo", td:d => countryGroupOf(d.country), hint:"La agrupación de Objetivos por país", sort:d => norm(countryGroupOf(d.country))},
+  {id:"opportunity", label:"Oportunidad", def:true, td:d => d.opportunity || "—", sort:d => norm(d.opportunity)},
+  {id:"amount", label:"Importe", def:true, num:true, td:d => fmtMoney(d.amount), sort:d => d.amount || 0},
+  {id:"quarter", label:"Trimestre", td:d => d.quarter || "—", sort:d => d.quarter || ""},
+  {id:"year", label:"Año", td:d => yearOf(d) || "—", sort:d => yearOf(d) || ""},
+  {id:"imported", label:"Importado el", td:d => d.importedAt ? new Date(d.importedAt).toLocaleDateString("es-ES") : "—", sort:d => d.importedAt || 0}
 ];
 const COLSETS = {posts:{name:"Publicaciones", cols:POST_COLS}, sales:{name:"Ventas", cols:SALES_COLS}};
 function colCfg(t){
   const all = COLSETS[t].cols, ids = all.map(c => c.id);
   const src = S.dash && S.dash.cols && S.dash.cols[t] || (dashState().cols || {})[t];
   const order = src && Array.isArray(src.order) ? src.order.filter(id => ids.includes(id)) : ids.slice();
-  ids.forEach(id => { if (!order.includes(id)) order.push(id); });
+  // columns added after someone saved their layout appear next to their neighbour, and default ones start visible
+  const added = ids.filter(id => !order.includes(id));
+  added.forEach(id => { const prev = ids.slice(0, ids.indexOf(id)).reverse().find(x => order.includes(x)); order.splice(prev ? order.indexOf(prev) + 1 : 0, 0, id); });
   const shown = src && Array.isArray(src.shown) ? src.shown.filter(id => ids.includes(id)) : all.filter(c => c.def).map(c => c.id);
+  if (src && Array.isArray(src.shown)) added.forEach(id => { if (all.find(c => c.id === id).def && !shown.includes(id)) shown.push(id); });
   return {order, shown};
 }
 function saveCols(t, cfg){ const d = dashState(); d.cols = Object.assign({}, d.cols || {}, {[t]: cfg}); saveDash(); }
 function colTable(t, rows, opts){
-  const skip = (opts && opts.skip) || [], cfg = colCfg(t), all = COLSETS[t].cols;
+  const skip = (opts && opts.skip) || [], cfg = colCfg(t), all = COLSETS[t].cols, sortable = !(opts && opts.noSort);
   const vis = cfg.order.filter(id => cfg.shown.includes(id) && !skip.includes(id)).map(id => all.find(c => c.id === id));
   if (!vis.length) return h("div",{class:"notice"}, "No hay columnas visibles. ", h("button",{class:"btn small", onclick:()=>openColPicker(t)}, "Elegir columnas"));
+  const st = (S.tableSort && S.tableSort[t]) || null;
+  let out = rows;
+  if (sortable && st && vis.some(c => c.id === st.key)){
+    const col = all.find(c => c.id === st.key), dir = st.dir === "asc" ? 1 : -1;
+    const kv = d => { try { return col.sort ? col.sort(d) : (col.td ? col.td(d) : ""); } catch(e){ return ""; } };
+    out = rows.map((d, i) => [d, i]).sort((a, b) => {
+      let x = kv(a[0]), y = kv(b[0]);
+      const bx = x == null || x === "" || x === "—", by = y == null || y === "" || y === "—";
+      if (bx && by) return a[1] - b[1];
+      if (bx) return 1; if (by) return -1;
+      const c = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), "es", {numeric:true});
+      return c ? c * dir : a[1] - b[1];
+    }).map(p => p[0]);
+  }
   const tb = h("tbody",null);
-  rows.forEach(d => tb.append(h("tr",null, vis.map(c => { let v; try { v = c.td(d); } catch(e){ v = "—"; } return h("td",{class: c.num ? "num" : null}, v); }))));
-  return h("div",{class:"tablewrap"}, h("table",{class:"table"}, h("thead",null, h("tr",null, vis.map(c => h("th",{class: c.num ? "num" : null}, c.label)))), tb));
+  out.forEach(d => tb.append(h("tr",null, vis.map(c => { let v; try { v = c.td(d); } catch(e){ v = "—"; } return h("td",{class: c.num ? "num" : null}, v); }))));
+  const th = vis.map(c => {
+    if (!sortable || c.sort === false) return h("th",{class: c.num ? "num" : null}, c.label);
+    const on = st && st.key === c.id, dir = on ? st.dir : null;
+    return h("th",{class: (c.num ? "num " : "") + "th-sort" + (on ? " on" : ""), role:"button", tabindex:"0", "aria-sort": on ? (dir === "asc" ? "ascending" : "descending") : "none", title:"Ordenar por " + c.label,
+      onclick:()=>setTableSort(t, c.id), onkeydown:e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); setTableSort(t, c.id); } }},
+      h("span",{class:"th-in"}, c.label, h("span",{class:"th-arr", "aria-hidden":"true"}, on ? (dir === "asc" ? "↑" : "↓") : "↕")));
+  });
+  return h("div",{class:"tablewrap"}, h("table",{class:"table"}, h("thead",null, h("tr",null, th)), tb));
+}
+function setTableSort(t, key){
+  S.tableSort = S.tableSort || {};
+  const st = S.tableSort[t];
+  const numeric = (COLSETS[t].cols.find(c => c.id === key) || {}).num;
+  if (st && st.key === key) st.dir = st.dir === "asc" ? "desc" : "asc";
+  else S.tableSort[t] = {key, dir: numeric ? "desc" : "asc"};
+  try { localStorage.setItem("ics-tablesort", JSON.stringify(S.tableSort)); } catch(e){}
+  render();
 }
 function colButton(t){ return h("button",{class:"btn small", title:"Elegir y ordenar las columnas", onclick:()=>openColPicker(t)}, icon("cols"), " Columnas"); }
 function openColPicker(t){
@@ -2873,11 +2921,16 @@ function parseVentasCSV(text){
   const delim = (lines[0].split(";").length >= lines[0].split(",").length) ? ";" : ",";
   const headers = csvSplitLine(lines[0], delim).map(h => h.trim());
   const nh = headers.map(norm);
-  const findCol = (...needles) => { for (let i = 0; i < nh.length; i++){ if (needles.some(n => nh[i].includes(n))) return i; } return -1; };
+  // the first needle that matches any column wins, so specific names ("account name") beat generic ones ("account")
+  const findCol = (...needles) => { for (const n of needles){ const i = nh.findIndex(x => x.includes(n)); if (i >= 0) return i; } return -1; };
   const cols = {
     amount: findCol("amount","importe","monto"), close_date: findCol("close date","fecha de cierre","fecha cierre"), stage: findCol("stage","fase","etapa"),
-    name: findCol("opportunity name","nombre de la oportunidad","nombre"), account: findCol("account name","account","cuenta"), owner: findCol("owner","propietario"),
-    country: findCol("country","pais"), id: findCol("opportunity id","id de la oportunidad","id")
+    name: findCol("opportunity name","nombre de la oportunidad","nombre"), owner: findCol("opportunity owner","propietario de la oportunidad","owner","propietario"),
+    account: (() => { const i = findCol("account name","nombre de la cuenta"); return i >= 0 ? i : nh.findIndex(x => /account|cuenta/.test(x) && !/record type|tipo de registro|owner|propietario|\bid\b/.test(x)); })(),
+    recordType: findCol("account record type","tipo de registro de la cuenta","tipo de registro de cuenta","record type","tipo de registro"),
+    modified: findCol("last modified date","fecha de la ultima modificacion","fecha de ultima modificacion","ultima modificacion","last modified"),
+    country: findCol("country","pais"), id: findCol("opportunity id","id de la oportunidad","id"),
+    created: findCol("created date","fecha de creacion","fecha creacion","created on","creado el")
   };
   if (cols.amount < 0 || cols.close_date < 0 || cols.stage < 0) return {error:"faltan columnas de importe, fecha de cierre o fase", headers};
   const deals = []; let skippedBadRow = 0; const byGroup = {};
@@ -2886,32 +2939,84 @@ function parseVentasCSV(text){
     if (!row.some(v => v && v.trim())) continue;
     const get = i => i >= 0 ? (row[i] || "").trim() : "";
     const d = parseDateJs(get(cols.close_date)), amount = parseAmountJs(get(cols.amount));
-    if (!d || amount == null){ skippedBadRow++; continue; }
+    if (!d){ skippedBadRow++; continue; }
     const stage = get(cols.stage) || null, name = get(cols.name) || null, account = get(cols.account) || null, owner = get(cols.owner) || null, country = get(cols.country) || null, sfId = get(cols.id) || null;
     const sg = stageGroupJs(stage);
     byGroup[sg] = (byGroup[sg]||0) + 1;
     deals.push({doc_id: "sf-" + sanitizeSalesId(sfId || `${account}-${name}-${d}-${amount}`),
-      data: {opportunity:name, account, owner, country, date:d, quarter:quarterOfJs(d), amount:Math.round(amount*100)/100, stage, stageGroup:sg, importedAt: Date.now()}});
+      data: {opportunity:name, account, owner, country, date:d, quarter:quarterOfJs(d), amount:Math.round((amount || 0)*100)/100, stage, stageGroup:sg, importedAt: Date.now(), ...(cols.created >= 0 ? {created: parseDateJs(get(cols.created)) || null} : {}), ...(cols.recordType >= 0 ? {recordType: get(cols.recordType) || null} : {}), ...(cols.modified >= 0 ? {modified: parseDateJs(get(cols.modified)) || null} : {})}});
   }
   return {deal_records: deals, by_stage_group: byGroup, skipped_bad_row: skippedBadRow, total_rows: lines.length - 1};
+}
+/* Write many documents without tripping the store's rate limits: a few at a time, retrying busy/transient errors, never stopping at the first failure */
+async function writeDocs(col, items, onProgress){
+  let next = 0, ok = 0, failed = 0, fatal = null;
+  const worker = async () => {
+    while (next < items.length && !fatal){
+      const it = items[next++];
+      for (let attempt = 0; ; attempt++){
+        try { await S.db.collection(col).doc(it.id).set(it.data); ok++; break; }
+        catch(e){
+          const code = e && e.code;
+          if (code === "quota_exceeded" || code === "revoked"){ fatal = e; break; }
+          if (code !== "invalid_argument" && attempt < 6){ await new Promise(r => setTimeout(r, 500 * 2 ** attempt + Math.random() * 400)); continue; }
+          failed++; break;
+        }
+      }
+      if (onProgress) onProgress(ok + failed, items.length);
+    }
+  };
+  await Promise.all(Array.from({length: Math.min(5, items.length)}, worker));
+  return {ok, failed, fatal};
+}
+/* Same shape as writeDocs but for deletes: a few at a time, retrying busy errors */
+async function deleteDocs(col, ids, onProgress){
+  let next = 0, ok = 0, failed = 0, fatal = null;
+  const worker = async () => {
+    while (next < ids.length && !fatal){
+      const id = ids[next++];
+      for (let attempt = 0; ; attempt++){
+        try { await S.db.collection(col).doc(id).delete(); ok++; break; }
+        catch(e){
+          const code = e && e.code;
+          if (code === "quota_exceeded" || code === "revoked"){ fatal = e; break; }
+          if (code !== "invalid_argument" && attempt < 6){ await new Promise(r => setTimeout(r, 500 * 2 ** attempt + Math.random() * 400)); continue; }
+          failed++; break;
+        }
+      }
+      if (onProgress) onProgress(ok + failed, ids.length);
+    }
+  };
+  await Promise.all(Array.from({length: Math.min(5, ids.length)}, worker));
+  return {ok, failed, fatal};
 }
 async function handleSalesCsv(e){
   const file = e.target.files[0]; e.target.value = "";
   if (!file || !S.db) return;
   S.salesImportBusy = true; render();
   try {
-    const text = await file.text();
+    // Salesforce can export as UTF-8 or ISO-8859-1: try UTF-8 first and fall back so accents survive either way
+    const buf = await file.arrayBuffer();
+    let text; try { text = new TextDecoder("utf-8", {fatal:true}).decode(buf); } catch(err){ text = new TextDecoder("windows-1252").decode(buf); }
     const res = parseVentasCSV(text);
     if (res.error){ toast(`No se han reconocido las columnas del CSV (${res.error}).`); return; }
-    if (!res.deal_records.length){ toast("El archivo no tiene filas válidas (importe o fecha ausentes)."); return; }
-    const batchAt = Date.now(), existing = new Map(S.sales.map(d => [salesKey(d), d.id]));
-    res.deal_records.forEach(d => { d.data.importedAt = batchAt; const ex = existing.get(salesKey(d.data)); if (ex && !/^sf-[a-zA-Z0-9]{15,18}$/.test(d.doc_id)) d.doc_id = ex; });
-    for (let i = 0; i < res.deal_records.length; i += 40){
-      await Promise.all(res.deal_records.slice(i, i+40).map(d => S.db.collection("sales").doc(d.doc_id).set(d.data)));
+    if (!res.deal_records.length){ toast("El archivo no tiene filas válidas (falta la fecha de cierre)."); return; }
+    const batchAt = Date.now();
+    res.deal_records.forEach(d => { d.data.importedAt = batchAt; });
+    const total = res.deal_records.length;
+    // Cada importación sustituye por completo a la anterior: primero se borran todas las ventas que ya hay guardadas.
+    const oldIds = S.sales.map(d => d.id);
+    const btn = () => document.getElementById("salesImportBtn");
+    let del = {ok: 0, failed: 0, fatal: null};
+    if (oldIds.length){
+      del = await deleteDocs("sales", oldIds, (n, t) => { const b = btn(); if (b && (n % 10 === 0 || n === t)) b.textContent = `Borrando ventas anteriores… ${n} de ${t}`; });
+      if (del.fatal){ toast(`Importación detenida: no se ha podido borrar la información anterior (${del.fatal.code === "quota_exceeded" ? "la base de datos está llena" : "se ha perdido el acceso"}). No se ha importado nada nuevo.`); return; }
     }
+    const w = await writeDocs("sales", res.deal_records.map(d => ({id:d.doc_id, data:d.data})), (n, t) => { const b = btn(); if (b && (n % 10 === 0 || n === t)) b.textContent = `Importando ${n} de ${t}…`; });
     const g = res.by_stage_group;
-    toast(`Importadas ${res.deal_records.length} operaciones (${g.ganada||0} ganadas · ${g.abierta||0} en curso · ${g.perdida||0} perdidas)${res.skipped_bad_row ? ` · ${res.skipped_bad_row} filas descartadas` : ""}`);
-  } catch(err){ toast("No se ha podido leer o importar el archivo."); }
+    if (w.fatal) toast(`Importación detenida: se ha borrado lo anterior pero solo se han guardado ${w.ok} de ${total} oportunidades nuevas (${w.fatal.code === "quota_exceeded" ? "la base de datos está llena" : "se ha perdido el acceso"}). Vuelve a importar el archivo para completarlo.`);
+    else toast(`Sustituidas: se han borrado ${del.ok} ventas anteriores${del.failed ? ` (${del.failed} no se pudieron borrar)` : ""} y se han importado ${w.ok} de ${total} oportunidades (${g.ganada||0} ganadas · ${g.abierta||0} en curso · ${g.perdida||0} perdidas)${w.failed ? ` · ${w.failed} no se han podido guardar: vuelve a importar el mismo archivo` : ""}${res.skipped_bad_row ? ` · ${res.skipped_bad_row} filas sin fecha de cierre descartadas` : ""}`);
+  } catch(err){ toast(`No se ha podido leer o importar el archivo${err && err.code ? " (" + err.code + ")" : ""}.`); }
   finally { S.salesImportBusy = false; render(); }
 }
 /* Una oportunidad = misma cuenta + nombre + fecha de cierre + importe. Si aparece en varias importaciones, se queda solo la de la importación más reciente (filas idénticas dentro de una misma importación se respetan). */
@@ -2927,8 +3032,59 @@ function dedupSales(rows){
   });
   return out.sort((a,b) => String(a.date).localeCompare(String(b.date)));
 }
+/* ---------- Sales Analyst (uses the current sales filters) ---------- */
+function salesSummary(f){
+  const grp = (key, fn) => {
+    const m = {};
+    f.forEach(d => { const k = (fn ? fn(d) : d[key]) || "—"; const x = m[k] = m[k] || {n:0, amt:0, won:0, wonAmt:0, open:0, openAmt:0, lost:0};
+      x.n++; x.amt += d.amount || 0;
+      if (d.stageGroup === "ganada"){ x.won++; x.wonAmt += d.amount || 0; } else if (d.stageGroup === "perdida") x.lost++; else { x.open++; x.openAmt += d.amount || 0; } });
+    return Object.entries(m).sort((a,b) => b[1].amt - a[1].amt).slice(0, 15).map(([k,x]) => `${k}: ${x.n} oport., ${Math.round(x.amt)} € en total; ganadas ${x.won} (${Math.round(x.wonAmt)} €); abiertas ${x.open} (${Math.round(x.openAmt)} €); perdidas ${x.lost}${x.won + x.lost ? `; tasa de éxito ${Math.round(x.won / (x.won + x.lost) * 100)} %` : ""}`).join("\n") || "sin datos";
+  };
+  const filters = [S.salesStage && "fase " + S.salesStage, S.salesType && "tipo de cuenta " + (S.salesType === "—" ? "sin tipo" : S.salesType), S.salesOwner && "propietario " + S.salesOwner, S.salesCountry && "país " + S.salesCountry, S.salesQuarter && "trimestre " + S.salesQuarter].filter(Boolean).join(", ") || "ninguno (todas las oportunidades)";
+  const top = f.filter(d => d.stageGroup !== "perdida").sort((a,b) => (b.amount||0) - (a.amount||0)).slice(0, 15)
+    .map(d => `${d.date} · ${d.account || "—"} · ${d.owner || "—"} · ${d.country || "—"} · ${d.stage || "—"} · ${Math.round(d.amount || 0)} €${d.recordType ? " · " + d.recordType : ""}${d.created ? " · creada " + d.created : ""}${d.modified ? " · últ. modif. " + d.modified : ""}`).join("\n");
+  const total = f.reduce((s,d) => s + (d.amount || 0), 0);
+  return `VENTAS (Salesforce). Hoy es ${todayStr()}. Filtros aplicados: ${filters}. Oportunidades: ${f.length}, importe total ${Math.round(total)} €.
+OBJETIVOS GUARDADOS: ${JSON.stringify(S.salesTargets || {}).slice(0, 1500)}
+POR AÑO:
+${grp(null, d => String(yearOf(d) || ""))}
+POR TRIMESTRE:
+${grp("quarter")}
+POR PROPIETARIO:
+${grp("owner")}
+POR TIPO DE CUENTA (Account Record Type):
+${S.sales.some(d => d.recordType) ? grp("recordType") : "no hay datos: el CSV importado no trae esa columna"}
+POR ZONA DE OBJETIVO:
+${grp(null, d => countryGroupOf(d.country))}
+POR FASE:
+${grp("stage")}
+MAYORES OPORTUNIDADES (no perdidas):
+${top}`;
+}
+async function runSalesAnalyst(){
+  if (!S.sample || S.salesAnalystBusy) return;
+  const f = salesFiltered();
+  if (!f.length){ toast("No hay oportunidades con estos filtros"); return; }
+  S.salesAnalystBusy = true; render();
+  try {
+    const res = await S.sample(`Eres el Analista comercial de Inèdit Software (software para la industria textil: neoStampa, neoTextil, neoCatalog, neoMatch). Analiza estas ventas reales de Salesforce y responde en ${uiLangName()}, en texto plano, con estas secciones: 1) Resumen en 3 frases: facturado frente a objetivo y tendencia. 2) Por comercial: quién va por delante o por detrás de su objetivo y por qué, con cifras. 3) Por tipo de cuenta (distribuidores, clientes, fabricantes…): dónde está el negocio y dónde falta. 4) Por zona o país frente a su objetivo. 5) Pipeline abierto: oportunidades grandes a vigilar y riesgos (fechas de cierre ya pasadas, sin modificaciones recientes). 6) 5 acciones concretas para las próximas semanas, incluyendo qué puede hacer marketing para apoyar a ventas. 7) Limitaciones de los datos. Usa solo las cifras de abajo, no inventes ninguna; si falta algún dato, dilo. Ten en cuenta los filtros aplicados.
+
+${salesSummary(f)}`, {cache:false, modelTier:"complex"});
+    await S.db.collection("reports").add({text:res.text, createdAt:Date.now(), count:f.length, kind:"sales"});
+    toast("Informe de ventas listo");
+  } catch(e){ toast("No se ha podido generar el informe"); }
+  finally { S.salesAnalystBusy = false; render(); }
+}
+function reportBox(r, key, title){
+  const open = !isCollapsed(key);
+  return h("div",{class:"list", style:{marginTop:"0"}},
+    collapseHead(key, `${title} · ${new Date(r.createdAt).toLocaleDateString("es-ES",{day:"numeric", month:"long"})}`, "Pulsa Mostrar para leerlo"),
+    open ? h("div",{class:"report"}, r.text) : null,
+    open ? h("button",{class:"btn small", style:{marginTop:"-8px", marginBottom:"18px"}, disabled:!S.db, onclick:()=>saveContent({title:`${title} · ` + new Date(r.createdAt).toLocaleDateString("es-ES"), body:r.text, kind:"plan", source:"Analista"})}, "Guardar en Contenidos") : null);
+}
 function salesFiltered(){
-  return S.sales.filter(d => (!S.salesOwner || d.owner === S.salesOwner) && (!S.salesCountry || d.country === S.salesCountry) && (!S.salesQuarter || d.quarter === S.salesQuarter) && (!S.salesStage || d.stageGroup === S.salesStage));
+  return S.sales.filter(d => (!S.salesOwner || d.owner === S.salesOwner) && (!S.salesCountry || d.country === S.salesCountry) && (!S.salesQuarter || d.quarter === S.salesQuarter) && (!S.salesStage || d.stageGroup === S.salesStage) && (!S.salesType || (S.salesType === "—" ? !d.recordType : d.recordType === S.salesType)));
 }
 function stageChip(d){
   const g = SG[d.stageGroup] || {color:"var(--muted)"};
@@ -2943,6 +3099,11 @@ function viewSales(){
   const sel = (label, value, opts, onchange) => h("label",null, label, h("select",{onchange}, h("option",{value:""}, "Todos"), opts.map(o => h("option",{value:o, selected:value===o}, o))));
   const stagePills = h("div",{class:"sub", style:{margin:"0"}}, STAGE_GROUPS.map(g => h("button",{class:"pchip noicon", "aria-pressed": S.salesStage===g.id ? "true":"false", onclick:()=>{ S.salesStage = g.id; render(); }},
     g.color ? h("span",{style:{display:"inline-block", width:"7px", height:"7px", borderRadius:"50%", background:g.color}}) : null, g.name + (g.id ? ` (${S.sales.filter(d=>d.stageGroup===g.id).length})` : ` (${S.sales.length})`))));
+  const types = [...new Set(S.sales.map(d => d.recordType).filter(Boolean))].sort((a,b) => a.localeCompare(b, "es"));
+  const typeOpts = [["", "Todos los tipos", S.sales.length], ...types.map(t => [t, t, S.sales.filter(d => d.recordType === t).length]), ...(types.length && S.sales.some(d => !d.recordType) ? [["—", "Sin tipo", S.sales.filter(d => !d.recordType).length]] : [])];
+  const typePills = types.length
+    ? h("div",{class:"sub", style:{margin:"10px 0 0"}, role:"group", "aria-label":"Tipo de cuenta"}, h("span",{class:"pl-lbl"}, "Tipo de cuenta"), typeOpts.map(([id, name, n]) => h("button",{class:"pchip noicon", "aria-pressed": (S.salesType || "") === id ? "true" : "false", onclick:()=>{ S.salesType = id; render(); }}, `${name} (${n})`)))
+    : h("p",{style:{margin:"10px 0 0", fontSize:"12.5px", color:"var(--muted)"}}, "Para ver solo distribuidores, clientes o fabricantes, reimporta el CSV de Salesforce con la columna «Account Record Type».");
   if (isCollapsed("sales")){
     const tot = salesFiltered().reduce((s,d) => s + (d.amount||0), 0);
     return h("div",{class:"list"}, collapseHead("sales", "Todas las ventas", `${S.sales.length.toLocaleString("es-ES")} oportunidades · ${fmtShortMoney(tot)} con los filtros actuales`));
@@ -2950,6 +3111,7 @@ function viewSales(){
   const wrap = h("div",{class:"list"},
     collapseHead("sales", "Todas las ventas"),
     stagePills,
+    typePills,
     h("div",{class:"ftools", style:{marginTop:"12px"}},
       sel("Propietario", S.salesOwner, owners, e => { S.salesOwner = e.target.value; render(); }),
       sel("País", S.salesCountry, countries, e => { S.salesCountry = e.target.value; render(); }),
@@ -2965,7 +3127,8 @@ function viewSales(){
     h("div",{style:{height:"7px", borderRadius:"4px", background:"var(--soft)", overflow:"hidden"}}, h("div",{style:{height:"100%", width:Math.max(4, v/max*100) + "%", background:"var(--accent)", borderRadius:"4px"}}))))); };
   if (f.length) wrap.append(h("div",{style:{display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:"20px", marginBottom:"18px"}},
     h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por propietario"), barList(byGroup("owner"))),
-    h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por país"), barList(byGroup("country")))));
+    h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por país"), barList(byGroup("country"))),
+    types.length ? h("div",null, h("div",{style:{fontSize:"13px", fontWeight:"600", marginBottom:"8px"}}, "Por tipo de cuenta"), barList(byGroup("recordType"))) : null));
   const fs = f.slice().sort((a,b) => String(b.date).localeCompare(String(a.date)));
   wrap.append(h("div",{class:"lhead"}, h("span",{class:"cnt"}, `${fs.length.toLocaleString("es-ES")} oportunidades en la tabla`), colButton("sales")), colTable("sales", fs));
   return wrap;
