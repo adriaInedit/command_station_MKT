@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; background: #fff; font-family: var(--font-sans); }
+nav {
+  display: flex; align-items: center; padding: 0 32px; height: 64px;
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+}
+.logo { display: flex; align-items: center; margin-right: 40px; }
+.logo img { height: 30px; object-fit: contain; display: block; }
+.nav-links { display: flex; gap: 4px; flex: 1; }
+.nav-link { padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--fg2); border-radius: 4px; cursor: pointer; position: relative; transition: color 150ms; }
+.nav-link:hover { color: var(--fg1); }
+.nav-link.active { color: var(--color-orange-500); font-weight: 600; }
+.nav-link.active::after { content: ''; position: absolute; bottom: -18px; left: 14px; right: 14px; height: 2px; background: var(--color-orange-500); border-radius: 1px; }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.btn-nav { font-family: var(--font-sans); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; padding: 8px 18px; border-radius: 9999px; border: none; cursor: pointer; }
+.btn-nav-ghost { background: transparent; color: var(--fg1); border: 1px solid var(--border-medium); }
+.btn-nav-primary { background: var(--color-orange-500); color: #fff; }
+</style>
+</head><body>
+<nav>
+  <div class="logo">
+    <img src="../assets/inedit-fiery_logo.png" alt="inēdit fiery">
+  </div>
+  <div class="nav-links">
+    <div class="nav-link active">Products</div>
+    <div class="nav-link">Solutions</div>
+    <div class="nav-link">Resources</div>
+    <div class="nav-link">Partners</div>
+    <div class="nav-link">Company</div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-nav btn-nav-ghost">EN / ES</button>
+    <button class="btn-nav btn-nav-primary">Request a Demo</button>
+  </div>
+</nav>
+</body></html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<!-- @dsCard group="UI Kit — Website" name="Website UI Kit" subtitle="inedit.com marketing site — homepage, product pages, contact modal" viewport="1280x800" -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inèdit Software — Website UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Soho Gothic Pro', 'Helvetica Neue', Arial, sans-serif; color: #2b2b2b; background: #fff; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f0f0f0; } ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+/* ── Brand colors ── */
+const C = {
+  orange: '#fe5000', orangeHover: '#d44200',
+  gray: '#898989', dark: '#2b2b2b', darkest: '#1a1a1a',
+  bg: '#fff', bgAlt: '#f8f8f8', bgDark: '#1a1a1a',
+  border: '#e0e0e0',
+  ns: '#0072ce', nt: '#da291c', nc: '#509e2f', nm: '#e6007e'
+};
+
+/* ── Logo ── */
+function Logo({ white }) {
+  return (
+    <img src={white ? '../../assets/inedit-fiery_logo_white.png' : '../../assets/inedit-fiery_logo.png'}
+      alt="inēdit fiery" style={{ height: 30, objectFit: 'contain', display: 'block' }}/>
+  );
+}
+
+/* ── Nav ── */
+function Nav({ onNav, active }) {
+  const links = ['Products','Solutions','Resources','Partners','Company'];
+  return (
+    <nav style={{ position:'sticky', top:0, zIndex:100, background:'#fff', borderBottom:`1px solid ${C.border}`, padding:'0 48px', height:64, display:'flex', alignItems:'center', gap:0 }}>
+      <div style={{ marginRight:40, cursor:'pointer' }} onClick={() => onNav('home')}><Logo/></div>
+      <div style={{ display:'flex', gap:2, flex:1 }}>
+        {links.map(l => (
+          <button key={l} onClick={() => onNav(l.toLowerCase())}
+            style={{ background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:13, fontWeight:500, padding:'6px 14px', borderRadius:4, color: active===l.toLowerCase() ? C.orange : '#666', position:'relative', transition:'color 150ms' }}>
+            {l}
+            {active===l.toLowerCase() && <div style={{ position:'absolute', bottom:-19, left:14, right:14, height:2, background:C.orange, borderRadius:1 }}/>}
+          </button>
+        ))}
+      </div>
+      <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+        <button style={{ fontFamily:'inherit', fontSize:12, fontWeight:600, padding:'7px 16px', borderRadius:99, border:`1px solid ${C.border}`, background:'none', cursor:'pointer', color:C.dark }}>EN / ES</button>
+        <button onClick={() => onNav('contact')} style={{ fontFamily:'inherit', fontSize:12, fontWeight:700, padding:'8px 20px', borderRadius:99, border:'none', background:C.orange, color:'#fff', cursor:'pointer', letterSpacing:'0.02em' }}>Request a Demo</button>
+      </div>
+    </nav>
+  );
+}
+
+/* ── Hero ── */
+function Hero({ onNav }) {
+  return (
+    <section style={{ background:'#1a1a1a', color:'#fff', padding:'96px 48px 80px', position:'relative', overflow:'hidden' }}>
+      {/* subtle texture overlay */}
+      <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(circle at 70% 50%, rgba(232,64,32,0.15) 0%, transparent 60%)', pointerEvents:'none' }}/>
+      <div style={{ maxWidth:1120, margin:'0 auto', position:'relative' }}>
+        <div style={{ display:'inline-block', fontSize:10, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', color:C.orange, marginBottom:20, border:`1px solid rgba(232,64,32,0.4)`, padding:'4px 12px', borderRadius:2 }}>
+          Digital Textile Solutions
+        </div>
+        <h1 style={{ fontSize:72, fontWeight:800, fontStyle:'italic', lineHeight:1.0, color:'#fff', marginBottom:24, maxWidth:640 }}>
+          From design<br/>to production.
+        </h1>
+        <p style={{ fontSize:18, fontWeight:300, color:'rgba(255,255,255,0.7)', lineHeight:1.7, maxWidth:480, marginBottom:40 }}>
+          Inèdit Software empowers the textile industry with intelligent digital tools — covering every stage from creative design to high-precision printing.
+        </p>
+        <div style={{ display:'flex', gap:14 }}>
+          <button onClick={() => onNav('products')} style={{ fontFamily:'inherit', fontWeight:700, fontSize:14, padding:'12px 28px', borderRadius:99, border:'none', background:C.orange, color:'#fff', cursor:'pointer', letterSpacing:'0.02em' }}>Explore Products</button>
+          <button onClick={() => onNav('contact')} style={{ fontFamily:'inherit', fontWeight:600, fontSize:14, padding:'12px 28px', borderRadius:99, border:'1px solid rgba(255,255,255,0.3)', background:'transparent', color:'#fff', cursor:'pointer' }}>Request a Demo</button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Product Grid ── */
+const products = [
+  { id:'neostampa', name:'neoStampa', suffix:'Stampa', color:C.ns, tag:'RIP Software', desc:'High-performance digital textile printing RIP with advanced color calibration, profiling, and cost control across any printer fleet.' },
+  { id:'neotextil', name:'neoTextil', suffix:'Textil', color:C.nt, tag:'Photoshop Plugin', desc:'Adobe Photoshop plugin for repeat creation, colorways, and automated rapport generation — from concept to production-ready artwork.' },
+  { id:'neocatalog', name:'neoCatalog', suffix:'Catalog', color:C.nc, tag:'Workflow Management', desc:'Centralized design catalog with full traceability, team collaboration, and efficient management of large volumes of textile designs.' },
+  { id:'neomatch', name:'neoMatch', suffix:'Match', color:C.nm, tag:'Color Management', desc:'Precision color matching solution ensuring consistent, accurate color reproduction across substrates and production environments.' },
+];
+
+function ProductCard({ product, onClick }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div onClick={() => onClick(product.id)}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ background:'#fff', borderRadius:8, boxShadow: hov ? '0 10px 30px rgba(0,0,0,0.12)' : '0 4px 12px rgba(0,0,0,0.07)', cursor:'pointer', overflow:'hidden', transition:'box-shadow 250ms, transform 250ms', transform: hov ? 'translateY(-3px)' : 'none', border:`1px solid ${hov ? product.color+'40' : C.border}` }}>
+      <div style={{ height:6, background:product.color }}/>
+      <div style={{ padding:'20px 22px 22px' }}>
+        <div style={{ display:'inline-block', fontSize:10, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:product.color, background:product.color+'15', padding:'3px 9px', borderRadius:3, marginBottom:12 }}>{product.tag}</div>
+        <div style={{ fontSize:22, fontWeight:400, color:C.dark, marginBottom:10 }}>
+          <span style={{ fontWeight:300 }}>neo</span><span style={{ fontWeight:700, color:product.color }}>{product.suffix}</span>
+        </div>
+        <p style={{ fontSize:13, color:'#666', lineHeight:1.6 }}>{product.desc}</p>
+        <div style={{ marginTop:14, fontSize:12, fontWeight:700, color:product.color, letterSpacing:'0.04em', display:'flex', alignItems:'center', gap:4 }}>
+          Learn more <span style={{ transition:'transform 150ms', display:'inline-block', transform: hov ? 'translateX(4px)' : 'none' }}>→</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductsSection({ onNav }) {
+  return (
+    <section style={{ padding:'72px 48px', background:C.bgAlt }}>
+      <div style={{ maxWidth:1120, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:48 }}>
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', color:C.orange, marginBottom:12 }}>Our Products</div>
+          <h2 style={{ fontSize:38, fontWeight:700, fontStyle:'italic', color:C.dark, lineHeight:1.2 }}>One ecosystem.<br/>Every stage.</h2>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
+          {products.map(p => <ProductCard key={p.id} product={p} onClick={id => onNav(id)}/>)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Features strip ── */
+const features = [
+  { icon:'⬡', title:'Color Precision', desc:'ICC profiling and calibration across every substrate.' },
+  { icon:'◈', title:'Workflow Automation', desc:'Repeat rules, colorways, and production exports — automated.' },
+  { icon:'◎', title:'Centralized Assets', desc:'One catalog for designs, variations, and production files.' },
+  { icon:'◉', title:'Team Collaboration', desc:'Traceability and access control across your entire operation.' },
+  { icon:'◐', title:'Printer Control', desc:'Compatible with all major digital textile printers.' },
+  { icon:'◑', title:'Cost Tracking', desc:'Ink consumption and job costing built into every workflow.' },
+];
+
+function FeaturesStrip() {
+  return (
+    <section style={{ padding:'72px 48px', background:'#fff' }}>
+      <div style={{ maxWidth:1120, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:48 }}>
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', color:C.orange, marginBottom:12 }}>Why Inèdit</div>
+          <h2 style={{ fontSize:36, fontWeight:700, color:C.dark }}>Built for textile professionals</h2>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24 }}>
+          {features.map((f,i) => (
+            <div key={i} style={{ padding:'24px', border:`1px solid ${C.border}`, borderRadius:6 }}>
+              <div style={{ fontSize:24, marginBottom:12, color:C.orange }}>{f.icon}</div>
+              <div style={{ fontSize:15, fontWeight:700, color:C.dark, marginBottom:6 }}>{f.title}</div>
+              <p style={{ fontSize:13, color:'#666', lineHeight:1.6 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Partners ── */
+const partners = ['EFI Reggiani','MS Printing','Konica Minolta','Epson','Brother','Mimaki'];
+function PartnersStrip() {
+  return (
+    <section style={{ padding:'40px 48px', borderTop:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}` }}>
+      <div style={{ maxWidth:1120, margin:'0 auto', display:'flex', alignItems:'center', gap:32, flexWrap:'wrap' }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:C.gray, whiteSpace:'nowrap' }}>Trusted by</div>
+        {partners.map(p => (
+          <div key={p} style={{ fontSize:13, fontWeight:600, color:'#b0b0b0', letterSpacing:'0.02em' }}>{p}</div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ── CTA band ── */
+function CTABand({ onNav }) {
+  return (
+    <section style={{ background:C.orange, padding:'64px 48px', textAlign:'center' }}>
+      <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(255,255,255,0.7)', marginBottom:16 }}>Get started today</div>
+      <h2 style={{ fontSize:40, fontWeight:800, fontStyle:'italic', color:'#fff', marginBottom:20 }}>Ready to optimize<br/>your workflow?</h2>
+      <p style={{ fontSize:16, fontWeight:300, color:'rgba(255,255,255,0.8)', marginBottom:32, maxWidth:400, margin:'0 auto 32px' }}>Request a demo and see how Inèdit can transform your textile production process.</p>
+      <button onClick={() => onNav('contact')} style={{ fontFamily:'inherit', fontWeight:700, fontSize:14, padding:'14px 32px', borderRadius:99, border:'2px solid rgba(255,255,255,0.8)', background:'transparent', color:'#fff', cursor:'pointer', letterSpacing:'0.02em' }}>Request a Demo</button>
+    </section>
+  );
+}
+
+/* ── Footer ── */
+function Footer() {
+  const cols = [
+    { title:'Products', links:['neoStampa','neoTextil','neoCatalog','neoMatch'] },
+    { title:'Company', links:['About us','Careers','Partners','News'] },
+    { title:'Resources', links:['Documentation','Downloads','Support','Training'] },
+    { title:'Legal', links:['Privacy Policy','Terms of Use','Cookies'] },
+  ];
+  return (
+    <footer style={{ background:C.darkest, color:'#fff', padding:'56px 48px 32px' }}>
+      <div style={{ maxWidth:1120, margin:'0 auto' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:40, marginBottom:48 }}>
+          <div>
+            <Logo white/>
+            <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)', lineHeight:1.7, marginTop:16, maxWidth:240 }}>
+              Empowering the textile industry with intelligent digital solutions since 1996.
+            </p>
+            <div style={{ marginTop:20, fontSize:11, color:'rgba(255,255,255,0.35)', letterSpacing:'0.04em' }}>Barcelona, Spain</div>
+          </div>
+          {cols.map(col => (
+            <div key={col.title}>
+              <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:16 }}>{col.title}</div>
+              {col.links.map(l => (
+                <div key={l} style={{ fontSize:13, color:'rgba(255,255,255,0.65)', marginBottom:10, cursor:'pointer' }}>{l}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', paddingTop:24, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>© 2025 Inèdit Software S.L. — Part of the Fiery group.</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>inedit.com</div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ── Product Detail Page ── */
+function ProductPage({ product, onNav }) {
+  const featureList = {
+    neostampa: ['Multi-printer job management','ICC color profiling & calibration','Substrate-specific ink limiting','Print cost estimation','Nesting & step-and-repeat','RIP-on-the-fly processing'],
+    neotextil: ['Repeat pattern creation','Multi-colorway generation','Automated rapport placement','Spot color simulation','Photoshop native integration','Export to production formats'],
+    neocatalog: ['Centralized design repository','Multi-user collaboration','Version control & traceability','Client-facing catalog export','Bulk design management','Production status tracking'],
+    neomatch: ['Cross-substrate color matching','Lab measurement import','Tolerance reporting','Multi-printer calibration','Colorway variant linking','Delta-E reporting'],
+  };
+  const p = products.find(x => x.id === product) || products[0];
+  return (
+    <div>
+      <section style={{ background:C.darkest, color:'#fff', padding:'72px 48px' }}>
+        <div style={{ maxWidth:1120, margin:'0 auto' }}>
+          <div onClick={() => onNav('home')} style={{ fontSize:12, color:'rgba(255,255,255,0.4)', cursor:'pointer', marginBottom:24, display:'inline-flex', alignItems:'center', gap:6 }}>← Back to products</div>
+          <div style={{ display:'inline-block', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:p.color, border:`1px solid ${p.color}50`, padding:'4px 12px', borderRadius:2, marginBottom:20 }}>{p.tag}</div>
+          <h1 style={{ fontSize:64, fontWeight:800, fontStyle:'italic', color:'#fff', lineHeight:1.0, marginBottom:20 }}>
+            <span style={{ fontWeight:300 }}>neo</span>{p.suffix}
+          </h1>
+          <p style={{ fontSize:18, fontWeight:300, color:'rgba(255,255,255,0.7)', maxWidth:520, lineHeight:1.7, marginBottom:32 }}>{p.desc}</p>
+          <div style={{ display:'flex', gap:12 }}>
+            <button onClick={() => onNav('contact')} style={{ fontFamily:'inherit', fontWeight:700, fontSize:13, padding:'11px 26px', borderRadius:99, border:'none', background:p.color, color:'#fff', cursor:'pointer' }}>Request a Demo</button>
+            <button style={{ fontFamily:'inherit', fontWeight:600, fontSize:13, padding:'11px 26px', borderRadius:99, border:'1px solid rgba(255,255,255,0.25)', background:'transparent', color:'#fff', cursor:'pointer' }}>Download Trial</button>
+          </div>
+        </div>
+      </section>
+      <section style={{ padding:'64px 48px', background:C.bgAlt }}>
+        <div style={{ maxWidth:1120, margin:'0 auto' }}>
+          <h2 style={{ fontSize:28, fontWeight:700, color:C.dark, marginBottom:32 }}>Key Features</h2>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
+            {(featureList[product]||featureList.neostampa).map((f,i) => (
+              <div key={i} style={{ background:'#fff', borderRadius:6, padding:'20px 22px', border:`1px solid ${C.border}`, display:'flex', gap:12, alignItems:'flex-start' }}>
+                <div style={{ width:8, height:8, borderRadius:2, background:p.color, flexShrink:0, marginTop:5 }}/>
+                <div style={{ fontSize:14, fontWeight:500, color:C.dark }}>{f}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ── Contact Modal ── */
+function ContactForm({ onClose }) {
+  const [sent, setSent] = useState(false);
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background:'#fff', borderRadius:10, width:480, padding:40, boxShadow:'0 20px 60px rgba(0,0,0,0.3)', position:'relative' }}>
+        <button onClick={onClose} style={{ position:'absolute', top:16, right:16, background:'none', border:'none', fontSize:20, cursor:'pointer', color:C.gray }}>×</button>
+        {sent ? (
+          <div style={{ textAlign:'center', padding:'20px 0' }}>
+            <div style={{ fontSize:40, marginBottom:16 }}>✓</div>
+            <h3 style={{ fontSize:22, fontWeight:700, color:C.dark, marginBottom:8 }}>Thank you!</h3>
+            <p style={{ fontSize:14, color:'#666', lineHeight:1.6 }}>Our team will be in touch within one business day.</p>
+            <button onClick={onClose} style={{ marginTop:24, fontFamily:'inherit', fontWeight:700, fontSize:13, padding:'10px 24px', borderRadius:99, border:'none', background:C.orange, color:'#fff', cursor:'pointer' }}>Close</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:C.orange, marginBottom:8 }}>Get in touch</div>
+            <h3 style={{ fontSize:24, fontWeight:700, fontStyle:'italic', color:C.dark, marginBottom:24 }}>Request a Demo</h3>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16 }}>
+              {['First name','Last name'].map(l => (
+                <div key={l}><label style={{ display:'block', fontSize:11, fontWeight:600, color:C.dark, marginBottom:5 }}>{l}</label>
+                <input style={{ width:'100%', fontFamily:'inherit', fontSize:14, padding:'9px 12px', border:`1px solid ${C.border}`, borderRadius:4, outline:'none' }} placeholder=""/></div>
+              ))}
+            </div>
+            {['Email address','Company'].map(l => (
+              <div key={l} style={{ marginBottom:16 }}><label style={{ display:'block', fontSize:11, fontWeight:600, color:C.dark, marginBottom:5 }}>{l}</label>
+              <input style={{ width:'100%', fontFamily:'inherit', fontSize:14, padding:'9px 12px', border:`1px solid ${C.border}`, borderRadius:4, outline:'none' }} placeholder=""/></div>
+            ))}
+            <div style={{ marginBottom:24 }}><label style={{ display:'block', fontSize:11, fontWeight:600, color:C.dark, marginBottom:5 }}>Product interest</label>
+              <select style={{ width:'100%', fontFamily:'inherit', fontSize:14, padding:'9px 12px', border:`1px solid ${C.border}`, borderRadius:4, background:'#fff' }}>
+                <option>neoStampa</option><option>neoTextil</option><option>neoCatalog</option><option>neoMatch</option>
+              </select>
+            </div>
+            <button onClick={() => setSent(true)} style={{ width:'100%', fontFamily:'inherit', fontWeight:700, fontSize:14, padding:'12px', borderRadius:99, border:'none', background:C.orange, color:'#fff', cursor:'pointer', letterSpacing:'0.02em' }}>Send Request</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── App ── */
+function App() {
+  const saved = localStorage.getItem('inedit_web_page') || 'home';
+  const [page, setPage] = useState(saved);
+  const [showContact, setShowContact] = useState(false);
+
+  const onNav = (p) => {
+    if (p === 'contact') { setShowContact(true); return; }
+    setPage(p);
+    localStorage.setItem('inedit_web_page', p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const isProduct = ['neostampa','neotextil','neocatalog','neomatch'].includes(page);
+
+  return (
+    <>
+      <Nav onNav={onNav} active={isProduct ? 'products' : page}/>
+      {page === 'home' && <>
+        <Hero onNav={onNav}/>
+        <PartnersStrip/>
+        <ProductsSection onNav={onNav}/>
+        <FeaturesStrip/>
+        <CTABand onNav={onNav}/>
+        <Footer/>
+      </>}
+      {isProduct && <>
+        <ProductPage product={page} onNav={onNav}/>
+        <CTABand onNav={onNav}/>
+        <Footer/>
+      </>}
+      {!['home','neostampa','neotextil','neocatalog','neomatch'].includes(page) && <>
+        <div style={{ padding:'120px 48px', textAlign:'center', minHeight:'60vh' }}>
+          <div style={{ fontSize:48, fontWeight:700, fontStyle:'italic', color:C.dark, marginBottom:16 }}>{page.charAt(0).toUpperCase()+page.slice(1)}</div>
+          <p style={{ fontSize:16, color:'#666', marginBottom:32 }}>This section is a placeholder in the UI kit.</p>
+          <button onClick={() => onNav('home')} style={{ fontFamily:'inherit', fontWeight:700, fontSize:13, padding:'10px 24px', borderRadius:99, border:'none', background:C.orange, color:'#fff', cursor:'pointer' }}>← Back to Home</button>
+        </div>
+        <Footer/>
+      </>}
+      {showContact && <ContactForm onClose={() => setShowContact(false)}/>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

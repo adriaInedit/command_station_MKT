@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Form Inputs" subtitle="Text, select, focus, error states" viewport="700x180" -->
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; padding: 16px 20px; background: #f8f8f8; font-family: var(--font-sans); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+label { font-size: 11px; font-weight: 600; color: var(--fg1); letter-spacing: 0.03em; }
+input, select, textarea {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--fg1);
+  background: #fff;
+  border: 1px solid var(--border-medium);
+  border-radius: 4px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 150ms;
+  width: 100%;
+  box-sizing: border-box;
+}
+input:focus, select:focus { border-color: var(--color-orange-500); box-shadow: 0 0 0 3px rgba(232,64,32,0.12); }
+input.error { border-color: #e03030; }
+.hint { font-size: 10px; color: var(--fg3); }
+.error-msg { font-size: 10px; color: #e03030; }
+</style>
+</head><body>
+<div class="grid">
+  <div class="field">
+    <label>Email address</label>
+    <input type="email" placeholder="name@company.com">
+    <span class="hint">Used for license delivery</span>
+  </div>
+  <div class="field">
+    <label>Company</label>
+    <input type="text" value="Inèdit Software" style="border-color:var(--color-orange-500);box-shadow:0 0 0 3px rgba(232,64,32,0.12)">
+    <span class="hint">Focused state</span>
+  </div>
+  <div class="field">
+    <label>Product</label>
+    <select><option>neoStampa Delta</option><option>neoTextil</option><option>neoCatalog</option></select>
+    <span class="hint">Select your product</span>
+  </div>
+  <div class="field">
+    <label>License key</label>
+    <input type="text" value="XXX-INVALID-KEY" class="error">
+    <span class="error-msg">Invalid license key format</span>
+  </div>
+</div>
+</body></html>

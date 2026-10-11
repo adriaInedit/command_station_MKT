@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<!-- @dsCard group="UI Kit — Neocatalog" name="neoCatalog UI Kit" subtitle="Workflow platform — design catalog grid, detail view, history" viewport="1280x800" -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>neoCatalog — UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Soho Gothic Pro','Helvetica Neue',Arial,sans-serif; background: #f6f7f9; color: #2b2b2b; height: 100vh; overflow: hidden; }
+  ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #f0f0f0; } ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root" style="height:100vh;display:flex;flex-direction:column;overflow:hidden"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const C = { teal:'#509e2f', tealHover:'#3f7d25', dark:'#2b2b2b', gray:'#898989', border:'#e8e8e8', bg:'#f6f7f9', white:'#fff', muted:'#aaa', light:'#666' };
+
+/* ─ mock designs ─ */
+const designs = [
+  { id:1, name:'Floral S2024 v3', collection:'Spring 2024', status:'approved', colorways:5, tags:['floral','silk','repeat'], updated:'2h ago', owner:'A.Martí' },
+  { id:2, name:'Geometric AW24', collection:'Autumn/Winter 24', status:'in-review', colorways:3, tags:['geometric','jersey'], updated:'4h ago', owner:'L.Serra' },
+  { id:3, name:'Stripe Knit v2', collection:'Basics 2024', status:'draft', colorways:2, tags:['stripe','knit','basic'], updated:'Yesterday', owner:'R.Puig' },
+  { id:4, name:'Damask Heritage', collection:'Heritage Line', status:'approved', colorways:7, tags:['damask','jacquard'], updated:'2d ago', owner:'A.Martí' },
+  { id:5, name:'Abstract Brush 01', collection:'Artist Edition', status:'approved', colorways:4, tags:['abstract','brush','art'], updated:'3d ago', owner:'M.Font' },
+  { id:6, name:'Botanical Linen', collection:'Spring 2024', status:'in-review', colorways:3, tags:['botanical','linen'], updated:'3d ago', owner:'L.Serra' },
+  { id:7, name:'Check Tweed AW', collection:'Autumn/Winter 24', status:'draft', colorways:2, tags:['check','tweed','woven'], updated:'4d ago', owner:'R.Puig' },
+  { id:8, name:'Ikat Modern', collection:'Artist Edition', status:'approved', colorways:6, tags:['ikat','digital'], updated:'5d ago', owner:'M.Font' },
+];
+
+const collections = ['All Collections', 'Spring 2024', 'Autumn/Winter 24', 'Basics 2024', 'Heritage Line', 'Artist Edition'];
+
+/* ─ palette per design (mock) ─ */
+const palettes = {
+  1:['#c8a882','#8b6b4a','#e8d5b0','#5a3e28','#f2ece0'],
+  2:['#1a2a4a','#c9a227','#d4c5a9','#0d1a2e','#f5f0e8'],
+  3:['#3a4a5a','#6a7a8a','#b8c8d8','#1a2a3a','#e8f0f5'],
+  4:['#4a2828','#8b4a4a','#d4a0a0','#2e1a1a','#f5e8e8'],
+  5:['#1a3a2a','#3a6a4a','#8ac8a0','#0d2a1a','#eaf5f0'],
+  6:['#5a3a2a','#9a6a4a','#d4b08a','#3a1a0a','#f5e8d8'],
+  7:['#2a2a3a','#4a4a6a','#9090b8','#1a1a2e','#e8e8f5'],
+  8:['#3a1a3a','#7a4a7a','#c090c0','#220a22','#f5e8f5'],
+};
+
+const statusConfig = {
+  'approved':   { label:'Approved',   color:'#509e2f', bg:'#edfaf5' },
+  'in-review':  { label:'In Review',  color:'#f59e0b', bg:'#fff8e1' },
+  'draft':      { label:'Draft',      color:'#aaa',    bg:'#f4f4f4' },
+};
+
+/* ─ ColorStrip ─ */
+function ColorStrip({ id }) {
+  const cols = palettes[id] || palettes[1];
+  return (
+    <div style={{ display:'flex', height:6, borderRadius:3, overflow:'hidden', marginBottom:10 }}>
+      {cols.map((c,i) => <div key={i} style={{ flex:1, background:c }}/>)}
+    </div>
+  );
+}
+
+/* ─ Design swatch block ─ */
+function DesignSwatch({ id }) {
+  const cols = palettes[id] || palettes[1];
+  return (
+    <div style={{ height:120, background: `linear-gradient(135deg, ${cols[0]} 0%, ${cols[1]} 35%, ${cols[2]} 65%, ${cols[3]} 100%)`, position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', borderRadius:'50%', width:80, height:100, top:-20, left:20, background:cols[4], opacity:0.4 }}/>
+      <div style={{ position:'absolute', borderRadius:'50%', width:40, height:50, bottom:10, right:15, background:cols[1], opacity:0.5 }}/>
+    </div>
+  );
+}
+
+/* ─ Stat chip ─ */
+function Stat({ label, value, accent }) {
+  return (
+    <div style={{ background:C.white, borderRadius:6, padding:'14px 18px', border:`1px solid ${C.border}` }}>
+      <div style={{ fontSize:24, fontWeight:800, color: accent||C.dark, fontStyle:'italic' }}>{value}</div>
+      <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{label}</div>
+    </div>
+  );
+}
+
+/* ─ Sidebar ─ */
+const navItems = [
+  { id:'catalog', label:'Catalog', icon:'◫' },
+  { id:'collections', label:'Collections', icon:'◈' },
+  { id:'workflow', label:'Workflow', icon:'◎' },
+  { id:'clients', label:'Clients', icon:'◉' },
+  { id:'reports', label:'Reports', icon:'◐' },
+];
+function Sidebar({ active, onNav }) {
+  return (
+    <div style={{ width:210, background:C.white, borderRight:`1px solid ${C.border}`, display:'flex', flexDirection:'column', flexShrink:0 }}>
+      <div style={{ padding:'16px 18px', borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', gap:8 }}>
+        <div style={{ width:28, height:28, borderRadius:5, background:C.teal, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:900, fontStyle:'italic', color:'#fff' }}>nC</div>
+        <div>
+          <div style={{ fontSize:13, fontWeight:700, color:C.dark }}><span style={{ fontWeight:300 }}>neo</span>Catalog</div>
+          <div style={{ fontSize:9, color:C.muted, letterSpacing:'0.05em' }}>Workflow Platform</div>
+        </div>
+      </div>
+      <div style={{ flex:1, padding:'8px 0', overflowY:'auto' }}>
+        {navItems.map(item => (
+          <div key={item.id} onClick={() => onNav(item.id)}
+            style={{ padding:'9px 18px', display:'flex', alignItems:'center', gap:10, cursor:'pointer', fontSize:13, fontWeight:500, color: active===item.id ? C.teal : C.light, background: active===item.id ? `${C.teal}10` : 'transparent', borderLeft: active===item.id ? `2px solid ${C.teal}` : '2px solid transparent', transition:'all 150ms' }}>
+            <span style={{ opacity:0.7 }}>{item.icon}</span>{item.label}
+          </div>
+        ))}
+      </div>
+      <div style={{ padding:'14px 18px', borderTop:`1px solid ${C.border}` }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ width:28, height:28, borderRadius:'50%', background:'#e84020', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:'#fff' }}>AM</div>
+          <div><div style={{ fontSize:12, fontWeight:600, color:C.dark }}>A. Martí</div><div style={{ fontSize:10, color:C.muted }}>Design Lead</div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─ Catalog grid view ─ */
+function CatalogView({ onSelectDesign }) {
+  const [filter, setFilter] = useState('All Collections');
+  const [search, setSearch] = useState('');
+  const filtered = designs.filter(d => (filter==='All Collections' || d.collection===filter) && d.name.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      {/* Toolbar */}
+      <div style={{ padding:'14px 20px', background:C.white, borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
+        <div style={{ fontSize:15, fontWeight:700, color:C.dark, marginRight:8 }}>Design Catalog</div>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search designs…"
+          style={{ flex:1, maxWidth:280, fontFamily:'inherit', fontSize:13, padding:'7px 12px', border:`1px solid ${C.border}`, borderRadius:4, outline:'none', background:C.bg }} />
+        <select value={filter} onChange={e=>setFilter(e.target.value)} style={{ fontFamily:'inherit', fontSize:12, padding:'7px 10px', border:`1px solid ${C.border}`, borderRadius:4, background:'#fff', color:C.dark }}>
+          {collections.map(c => <option key={c}>{c}</option>)}
+        </select>
+        <button style={{ fontFamily:'inherit', fontSize:11, fontWeight:700, padding:'7px 16px', borderRadius:99, border:'none', background:C.teal, color:'#fff', cursor:'pointer', marginLeft:'auto' }}>+ New Design</button>
+      </div>
+
+      {/* Stats bar */}
+      <div style={{ padding:'14px 20px', display:'flex', gap:10, borderBottom:`1px solid ${C.border}`, background:C.bg }}>
+        <Stat label="Total designs" value={designs.length} accent={C.teal}/>
+        <Stat label="Approved" value={designs.filter(d=>d.status==='approved').length} accent="#509e2f"/>
+        <Stat label="In review" value={designs.filter(d=>d.status==='in-review').length} accent="#f59e0b"/>
+        <Stat label="Collections" value={5} accent={C.dark}/>
+      </div>
+
+      {/* Grid */}
+      <div style={{ flex:1, overflowY:'auto', padding:'20px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14 }}>
+          {filtered.map(d => {
+            const s = statusConfig[d.status];
+            return (
+              <div key={d.id} onClick={() => onSelectDesign(d)}
+                style={{ background:C.white, borderRadius:8, border:`1px solid ${C.border}`, overflow:'hidden', cursor:'pointer', transition:'box-shadow 200ms', boxShadow:'0 2px 6px rgba(0,0,0,0.04)' }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.10)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow='0 2px 6px rgba(0,0,0,0.04)'}>
+                <DesignSwatch id={d.id}/>
+                <div style={{ padding:'12px 13px' }}>
+                  <ColorStrip id={d.id}/>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.dark, marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.name}</div>
+                  <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{d.collection} · {d.colorways} colorways</div>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <span style={{ fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:99, background:s.bg, color:s.color }}>{s.label}</span>
+                    <span style={{ fontSize:10, color:C.muted }}>{d.updated}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─ Design Detail view ─ */
+function DesignDetail({ design, onBack }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const s = statusConfig[design.status];
+  const tabs = ['overview','colorways','history'];
+
+  const history = [
+    { date:'Today 09:14', user:'A. Martí', action:'Status changed to Approved', type:'status' },
+    { date:'Today 08:42', user:'L. Serra', action:'Added colorway "Navy & Gold"', type:'edit' },
+    { date:'Yesterday 15:30', user:'R. Puig', action:'Exported to neoStampa', type:'export' },
+    { date:'Yesterday 11:00', user:'A. Martí', action:'Submitted for review', type:'status' },
+    { date:'2 days ago', user:'L. Serra', action:'Created design file', type:'create' },
+  ];
+
+  return (
+    <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      {/* Header */}
+      <div style={{ padding:'14px 24px', background:C.white, borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', gap:14, flexShrink:0 }}>
+        <button onClick={onBack} style={{ background:'none', border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:12, color:C.muted, display:'flex', alignItems:'center', gap:4 }}>← Back</button>
+        <div style={{ fontSize:18, fontWeight:700, color:C.dark, fontStyle:'italic' }}>{design.name}</div>
+        <span style={{ fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:99, background:s.bg, color:s.color }}>{s.label}</span>
+        <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
+          <button style={{ fontFamily:'inherit', fontSize:11, fontWeight:600, padding:'7px 14px', borderRadius:4, border:`1px solid ${C.border}`, background:'transparent', cursor:'pointer', color:C.dark }}>Export</button>
+          <button style={{ fontFamily:'inherit', fontSize:11, fontWeight:700, padding:'7px 14px', borderRadius:4, border:'none', background:C.teal, color:'#fff', cursor:'pointer' }}>Send to neoStampa</button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display:'flex', background:C.white, borderBottom:`1px solid ${C.border}`, padding:'0 24px' }}>
+        {tabs.map(t => (
+          <button key={t} onClick={() => setActiveTab(t)} style={{ background:'none', border:'none', fontFamily:'inherit', fontSize:13, fontWeight:500, padding:'10px 16px', cursor:'pointer', color: activeTab===t ? C.teal : C.muted, borderBottom: activeTab===t ? `2px solid ${C.teal}` : '2px solid transparent', textTransform:'capitalize' }}>{t}</button>
+        ))}
+      </div>
+
+      <div style={{ flex:1, overflowY:'auto', padding:'24px' }}>
+        {activeTab==='overview' && (
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+            {/* Preview */}
+            <div style={{ background:C.white, borderRadius:8, border:`1px solid ${C.border}`, overflow:'hidden' }}>
+              <DesignSwatch id={design.id}/>
+              <div style={{ padding:'14px' }}>
+                <ColorStrip id={design.id}/>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
+                  {design.tags.map(t => <span key={t} style={{ fontSize:10, padding:'2px 8px', borderRadius:99, background:'#f0f0f0', color:C.muted }}>{t}</span>)}
+                </div>
+              </div>
+            </div>
+            {/* Meta */}
+            <div>
+              {[['Collection',design.collection],['Designer',design.owner],['Colorways',design.colorways+' variants'],['Last updated',design.updated],['Status',s.label]].map(([k,v]) => (
+                <div key={k} style={{ padding:'10px 0', borderBottom:`1px solid ${C.border}`, display:'flex', justifyContent:'space-between' }}>
+                  <span style={{ fontSize:12, color:C.muted }}>{k}</span>
+                  <span style={{ fontSize:12, fontWeight:600, color:C.dark }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab==='colorways' && (
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
+            {[1,2,3,4,5,6].slice(0,design.colorways+1).map(i => (
+              <div key={i} style={{ background:C.white, borderRadius:6, border:`1px solid ${C.border}`, overflow:'hidden' }}>
+                <div style={{ height:80, background:`linear-gradient(135deg, ${palettes[i]?.[0]||'#ccc'}, ${palettes[i]?.[2]||'#aaa'})` }}/>
+                <div style={{ padding:'8px 10px' }}>
+                  <div style={{ display:'flex', gap:2, marginBottom:5 }}>
+                    {(palettes[i]||palettes[1]).map((c,j) => <div key={j} style={{ width:12,height:12,borderRadius:2,background:c,border:'1px solid rgba(0,0,0,0.1)' }}/>)}
+                  </div>
+                  <div style={{ fontSize:11, fontWeight:600, color:C.dark }}>{['Original','Navy & Gold','Forest','Coral Blush','Slate Mono','Art Deco'][i-1]||'Variant '+i}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ border:`2px dashed ${C.border}`, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', minHeight:120, cursor:'pointer', color:C.muted, fontSize:12 }}>+ New colorway</div>
+          </div>
+        )}
+
+        {activeTab==='history' && (
+          <div style={{ maxWidth:560 }}>
+            {history.map((h,i) => (
+              <div key={i} style={{ display:'flex', gap:12, marginBottom:16 }}>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+                  <div style={{ width:8, height:8, borderRadius:'50%', background:h.type==='status'?C.teal:h.type==='export'?'#e84020':C.muted, flexShrink:0, marginTop:4 }}/>
+                  {i<history.length-1 && <div style={{ width:1, flex:1, background:C.border, marginTop:4 }}/>}
+                </div>
+                <div style={{ paddingBottom:8 }}>
+                  <div style={{ fontSize:13, color:C.dark, marginBottom:2 }}>{h.action}</div>
+                  <div style={{ fontSize:11, color:C.muted }}>{h.user} · {h.date}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─ App ─ */
+function App() {
+  const saved = localStorage.getItem('nc_view') || 'catalog';
+  const [view, setView] = useState(saved);
+  const [selDesign, setSelDesign] = useState(null);
+
+  const onNav = v => { setView(v); setSelDesign(null); localStorage.setItem('nc_view', v); };
+
+  return (
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden' }}>
+      <Sidebar active={view} onNav={onNav}/>
+      {view==='catalog' && !selDesign && <CatalogView onSelectDesign={d => setSelDesign(d)}/>}
+      {view==='catalog' && selDesign && <DesignDetail design={selDesign} onBack={() => setSelDesign(null)}/>}
+      {view!=='catalog' && (
+        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', color:C.muted, fontSize:14 }}>
+          {view.charAt(0).toUpperCase()+view.slice(1)} — placeholder screen
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Product Cards" subtitle="Product feature cards with accent bars" viewport="700x180" -->
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; padding: 16px; background: #f4f4f4; font-family: var(--font-sans); }
+.cards { display: flex; gap: 12px; }
+.card { background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; flex: 1; }
+.card-bar { height: 6px; }
+.card-body { padding: 14px; }
+.card-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.card-title { font-size: 15px; font-weight: 400; font-style: italic; color: var(--fg1); line-height: 1.3; margin-bottom: 6px; }
+.card-desc { font-size: 12px; color: var(--fg2); line-height: 1.5; }
+.card-link { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-top: 10px; letter-spacing: 0.04em; }
+</style>
+</head><body>
+<div class="cards">
+  <div class="card">
+    <div class="card-bar" style="background:#da291c"></div>
+    <div class="card-body">
+      <div class="card-eyebrow" style="color:#da291c">Design Plugin</div>
+      <div class="card-title">neoTextil</div>
+      <div class="card-desc">Adobe Photoshop plugin for repeat creation, colorways, and automated rapport generation.</div>
+      <a class="card-link" href="#" style="color:#da291c">Learn more →</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-bar" style="background:#0072ce"></div>
+    <div class="card-body">
+      <div class="card-eyebrow" style="color:#0072ce">RIP Software</div>
+      <div class="card-title">neoStampa</div>
+      <div class="card-desc">High-performance color management and printing workflow for digital textile production.</div>
+      <a class="card-link" href="#" style="color:#0072ce">Learn more →</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-bar" style="background:#509e2f"></div>
+    <div class="card-body">
+      <div class="card-eyebrow" style="color:#509e2f">Workflow</div>
+      <div class="card-title">neoCatalog</div>
+      <div class="card-desc">Centralized design catalog and workflow management for large-volume textile operations.</div>
+      <a class="card-link" href="#" style="color:#509e2f">Learn more →</a>
+    </div>
+  </div>
+</div>
+</body></html>

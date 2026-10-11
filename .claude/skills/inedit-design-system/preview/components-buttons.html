@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Buttons" subtitle="Primary, secondary, ghost, dark, size variants + states" viewport="700x220" -->
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; padding: 20px; background: #fff; font-family: var(--font-sans); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+.label { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg3); margin-bottom: 8px; }
+button { font-family: var(--font-sans); cursor: pointer; font-size: 13px; font-weight: 600; border: none; transition: background 150ms; }
+.btn-primary { background: var(--color-orange-500); color: #fff; padding: 10px 24px; border-radius: 9999px; letter-spacing: 0.02em; }
+.btn-primary:hover { background: var(--color-orange-600); }
+.btn-secondary { background: transparent; color: var(--color-orange-500); border: 2px solid var(--color-orange-500); padding: 9px 22px; border-radius: 9999px; }
+.btn-ghost { background: transparent; color: var(--fg1); padding: 9px 16px; border-radius: 4px; }
+.btn-ghost:hover { background: var(--bg2); }
+.btn-dark { background: var(--color-gray-800); color: #fff; padding: 10px 24px; border-radius: 9999px; }
+.btn-sm { padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: var(--color-orange-500); color: #fff; border-radius: 9999px; }
+.btn-disabled { background: var(--color-gray-200); color: var(--fg3); padding: 10px 24px; border-radius: 9999px; cursor: not-allowed; }
+</style>
+</head><body>
+<div class="label">Buttons</div>
+<div class="row">
+  <button class="btn-primary">Get Started</button>
+  <button class="btn-secondary">Learn More</button>
+  <button class="btn-dark">Download</button>
+  <button class="btn-ghost">Cancel</button>
+</div>
+<div class="row">
+  <button class="btn-sm">DOWNLOAD TRIAL</button>
+  <button class="btn-disabled" disabled>Unavailable</button>
+</div>
+
+<div class="label" style="margin-top:4px">States</div>
+<div class="row">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <button class="btn-primary" style="background:#fe5000">Default</button>
+    <div style="font-size:9px;color:var(--fg3)">Default</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <button class="btn-primary" style="background:#d44200">Hover</button>
+    <div style="font-size:9px;color:var(--fg3)">Hover</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <button class="btn-primary" style="background:#aa3400">Active</button>
+    <div style="font-size:9px;color:var(--fg3)">Active</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <button class="btn-primary" style="background:#fe5000;outline:3px solid #fe500080;outline-offset:2px">Focus</button>
+    <div style="font-size:9px;color:var(--fg3)">Focus</div>
+  </div>
+</div>
+</body></html>

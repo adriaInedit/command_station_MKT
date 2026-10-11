@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Spacing" name="Radius & Shadows" subtitle="Border radius scale + 4-step shadow system" viewport="700x200" -->
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; padding: 16px; background: #f8f8f8; font-family: var(--font-sans); }
+.section { margin-bottom: 16px; }
+.label { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg3); margin-bottom: 8px; }
+.radii { display: flex; gap: 10px; align-items: flex-end; }
+.rbox { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rbox .box { background: var(--color-orange-100); border: 2px solid var(--color-orange-400); width: 40px; height: 40px; }
+.rbox .name { font-size: 9px; color: var(--fg2); }
+.shadows { display: flex; gap: 14px; }
+.sbox { background: #fff; padding: 14px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sbox .name { font-size: 9px; color: var(--fg2); }
+</style>
+</head><body>
+<div class="section">
+  <div class="label">Border Radius</div>
+  <div class="radii">
+    <div class="rbox"><div class="box" style="border-radius:2px"></div><div class="name">sm · 2px</div></div>
+    <div class="rbox"><div class="box" style="border-radius:4px"></div><div class="name">md · 4px</div></div>
+    <div class="rbox"><div class="box" style="border-radius:8px"></div><div class="name">lg · 8px</div></div>
+    <div class="rbox"><div class="box" style="border-radius:16px"></div><div class="name">xl · 16px</div></div>
+    <div class="rbox"><div class="box" style="border-radius:9999px;width:60px;height:30px"></div><div class="name">full · pill</div></div>
+  </div>
+</div>
+<div class="section">
+  <div class="label">Shadow Scale</div>
+  <div class="shadows">
+    <div class="sbox" style="box-shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.06);border-radius:4px"><div class="name">sm</div></div>
+    <div class="sbox" style="box-shadow:0 4px 12px rgba(0,0,0,0.10),0 2px 4px rgba(0,0,0,0.06);border-radius:4px"><div class="name">md</div></div>
+    <div class="sbox" style="box-shadow:0 10px 30px rgba(0,0,0,0.12),0 4px 10px rgba(0,0,0,0.06);border-radius:4px"><div class="name">lg</div></div>
+    <div class="sbox" style="box-shadow:0 20px 60px rgba(0,0,0,0.15),0 8px 20px rgba(0,0,0,0.08);border-radius:4px"><div class="name">xl</div></div>
+  </div>
+</div>
+</body></html>

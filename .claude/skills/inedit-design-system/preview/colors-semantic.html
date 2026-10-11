@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Semantic Color Tokens" subtitle="fg, bg, border tokens for light mode" viewport="700x220" -->
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; padding: 16px; background: #fff; font-family: var(--font-sans); }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.token { border-radius: 6px; overflow: hidden; border: 1px solid var(--border-light); }
+.swatch { height: 44px; }
+.info { padding: 6px 8px; }
+.name { font-size: 9px; font-weight: 600; color: var(--fg1); letter-spacing: 0.04em; }
+.val  { font-size: 9px; color: var(--fg2); margin-top: 1px; }
+</style>
+</head><body>
+<div class="grid">
+  <div class="token"><div class="swatch" style="background:var(--fg1)"></div><div class="info"><div class="name">--fg1</div><div class="val">Primary text</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--fg2)"></div><div class="info"><div class="name">--fg2</div><div class="val">Secondary text</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--fg3)"></div><div class="info"><div class="name">--fg3</div><div class="val">Muted / hint</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--fg-accent)"></div><div class="info"><div class="name">--fg-accent</div><div class="val">Orange accent</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--bg1);border-bottom:1px solid #eee"></div><div class="info"><div class="name">--bg1</div><div class="val">White</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--bg2)"></div><div class="info"><div class="name">--bg2</div><div class="val">Off-white</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--bg3)"></div><div class="info"><div class="name">--bg3</div><div class="val">Light gray</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--bg-dark)"></div><div class="info"><div class="name">--bg-dark</div><div class="val">Dark / footer</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--border-light)"></div><div class="info"><div class="name">--border-light</div><div class="val">Hairline border</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--border-medium)"></div><div class="info"><div class="name">--border-medium</div><div class="val">Default border</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--border-accent)"></div><div class="info"><div class="name">--border-accent</div><div class="val">Active / focus</div></div></div>
+  <div class="token"><div class="swatch" style="background:var(--bg-accent)"></div><div class="info"><div class="name">--bg-accent</div><div class="val">CTA background</div></div></div>
+</div>
+</body></html>

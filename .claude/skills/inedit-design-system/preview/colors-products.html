@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Product Colors" subtitle="Per-product accent colors — neoStampa, neoTextil, neoCatalog, neoMatch" viewport="700x170" -->
+<html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+body { margin: 0; padding: 16px; background: #fff; font-family: var(--font-sans); }
+.label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #888b8d; margin-bottom: 10px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.product { border-radius: 6px; overflow: hidden; border: 1px solid #e8e8e8; }
+.bar-wrap { display: flex; height: 64px; }
+.info { padding: 10px 12px; }
+.pantone { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: #888b8d; margin-bottom: 4px; }
+.pname { font-size: 15px; font-weight: 400; font-style: italic; color: #2e3032; margin-bottom: 6px; }
+.hexrow { display: flex; gap: 12px; }
+.hexval { font-size: 10px; font-weight: 700; color: #4e5052; }
+.hexlabel { font-size: 9px; color: #a0a3a5; margin-top: 1px; }
+</style>
+</head><body>
+<div class="label">Product Colors — Official Pantone Palette</div>
+<div class="grid">
+
+  <div class="product">
+    <div class="bar-wrap">
+      <div style="flex:1;background:#ff0000"></div>
+      <div style="flex:1;background:#da291c"></div>
+      <div style="flex:1;background:#8f0000"></div>
+    </div>
+    <div class="info">
+      <div class="pantone">PANTONE 485 C</div>
+      <div class="pname">neoTextil</div>
+      <div class="hexrow">
+        <div><div class="hexval">#FF0000</div><div class="hexlabel">Light</div></div>
+        <div><div class="hexval">#DA291C</div><div class="hexlabel">Main</div></div>
+        <div><div class="hexval">#8F0000</div><div class="hexlabel">Dark</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product">
+    <div class="bar-wrap">
+      <div style="flex:1;background:#009fff"></div>
+      <div style="flex:1;background:#0072ce"></div>
+      <div style="flex:1;background:#0043b7"></div>
+    </div>
+    <div class="info">
+      <div class="pantone">PANTONE 285 C</div>
+      <div class="pname">neoStampa</div>
+      <div class="hexrow">
+        <div><div class="hexval">#009FFF</div><div class="hexlabel">Light</div></div>
+        <div><div class="hexval">#0072CE</div><div class="hexlabel">Main</div></div>
+        <div><div class="hexval">#0043B7</div><div class="hexlabel">Dark</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="product">
+    <div class="bar-wrap">
+      <div style="flex:1;background:#5cbf3f"></div>
+      <div style="flex:1;background:#509e2f"></div>
+      <div style="flex:1;background:#0f652a"></div>
+    </div>
+    <div class="info">
+      <div class="pantone">PANTONE 362 C</div>
+      <div class="pname">neoCatalog</div>
+      <div class="hexrow">
+        <div><div class="hexval">#5CBF3F</div><div class="hexlabel">Light</div></div>
+        <div><div class="hexval">#509E2F</div><div class="hexlabel">Main</div></div>
+        <div><div class="hexval">#0F652A</div><div class="hexlabel">Dark</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body></html>

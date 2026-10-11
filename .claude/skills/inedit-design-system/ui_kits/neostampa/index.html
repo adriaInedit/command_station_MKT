@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<!-- @dsCard group="UI Kit — Neostampa" name="neoStampa UI Kit" subtitle="RIP production manager — print queue, printers, color profiles" viewport="1280x800" -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>neoStampa ControlCenter — UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Soho Gothic Pro','Helvetica Neue',Arial,sans-serif; background: #111; color: #e0e0e0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; } ::-webkit-scrollbar-track { background: #1a1a1a; } ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root" style="height:100vh;display:flex;flex-direction:column;overflow:hidden"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const C = {
+  blue: '#0072ce',      // neoStampa brand blue — Cc logo, Export btn, badge
+  orange: '#fe5000',    // Inèdit orange — chart accent
+  bg: '#111111',        // app background
+  sidebar: '#0d0d0d',   // sidebar
+  titlebar: '#161616',  // top title bar
+  panel: '#1e1e1e',     // card/panel bg
+  filter: '#1a1a1a',    // filter bar
+  row: '#1c1c1c',       // table row
+  rowHov: '#242424',
+  border: '#2a2a2a',
+  border2: '#333',
+  text: '#e8e8e8',
+  muted: '#888',
+  dim: '#555',
+};
+
+/* ── Windows chrome title bar ── */
+function TitleBar({ screen }) {
+  return (
+    <div style={{ height:32, background:C.titlebar, display:'flex', alignItems:'center', borderBottom:`1px solid ${C.border}`, flexShrink:0 }}>
+      {/* App icon + name */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, paddingLeft:10, width:120, flexShrink:0 }}>
+        <div style={{ width:18, height:18, background:C.blue, borderRadius:3, display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:900, color:'#fff' }}>Cc</div>
+        <span style={{ fontSize:11, color:'#bbb', fontWeight:500 }}>ControlCenter</span>
+      </div>
+      {/* Screen title centered */}
+      <div style={{ flex:1, textAlign:'center', fontSize:13, fontWeight:600, color:C.text }}>{screen}</div>
+      {/* Header icons */}
+      <div style={{ display:'flex', alignItems:'center', gap:6, paddingRight:10, width:120, justifyContent:'flex-end' }}>
+        {['🔔','⬜','☰','?'].map((ic,i) => (
+          <div key={i} style={{ width:24, height:24, display:'flex', alignItems:'center', justifyContent:'center', fontSize:i===3?10:12, color:C.muted, cursor:'pointer', borderRadius:3 }}>{ic}</div>
+        ))}
+        {/* Win chrome */}
+        <div style={{ display:'flex', marginLeft:8, gap:0 }}>
+          {['─','□','✕'].map((w,i) => (
+            <div key={i} style={{ width:36, height:32, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'#aaa', cursor:'pointer', background: i===2?'transparent':'transparent' }}>{w}</div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Filter bar ── */
+function Chip({ label, onRemove }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:0, background:'#2a2a2a', border:`1px solid ${C.border2}`, borderRadius:3, height:28, overflow:'hidden' }}>
+      <span style={{ padding:'0 10px', fontSize:11, color:C.text, whiteSpace:'nowrap', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis' }}>{label}</span>
+      <div style={{ display:'flex', alignItems:'center', borderLeft:`1px solid ${C.border2}`, height:'100%' }}>
+        <span style={{ padding:'0 6px', fontSize:10, color:C.muted, cursor:'pointer' }}>✕</span>
+        <span style={{ padding:'0 6px', fontSize:10, color:C.blue, cursor:'pointer', borderLeft:`1px solid ${C.border2}` }}>∨</span>
+      </div>
+    </div>
+  );
+}
+
+function FilterBar({ dateRange }) {
+  return (
+    <div style={{ height:44, background:C.filter, borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', gap:8, padding:'0 14px', flexShrink:0 }}>
+      <Chip label="Epson SureColor SC-P9000 (Violet)"/>
+      <Chip label="All schemes (0)"/>
+      <Chip label="Epson SureColor SC-P9000 (Violet)"/>
+      <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, background:'#2a2a2a', border:`1px solid ${C.border2}`, borderRadius:3, padding:'0 10px', height:28 }}>
+        <span style={{ fontSize:11, color:C.text }}>{dateRange}</span>
+        <span style={{ fontSize:12, color:C.muted }}>📅</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Sidebar ── */
+const navItems = [
+  { id:'statistics',      label:'STATISTICS',           icon:'📊' },
+  { id:'history',         label:'PRINTING HISTORY',     icon:'↩' },
+  { id:'queues',          label:'PRINT SERVER\nQUEUES', icon:'≡' },
+  { id:'preferences',     label:'PREFERENCES',          icon:'⚙' },
+  { id:'showroom',        label:'SHOWROOM',             icon:'📈', badge:5 },
+];
+
+function Sidebar({ active, onNav }) {
+  return (
+    <div style={{ width:112, background:C.sidebar, display:'flex', flexDirection:'column', borderRight:`1px solid ${C.border}`, flexShrink:0 }}>
+      <div style={{ flex:1, paddingTop:8 }}>
+        {navItems.map(item => (
+          <div key={item.id} onClick={() => onNav(item.id)}
+            style={{ padding:'12px 8px', display:'flex', flexDirection:'column', alignItems:'center', gap:5, cursor:'pointer', position:'relative',
+              background: active===item.id ? '#1e1e1e' : 'transparent',
+              borderLeft: active===item.id ? `2px solid ${C.blue}` : '2px solid transparent' }}>
+            <div style={{ fontSize:18, lineHeight:1 }}>{item.icon}</div>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.06em', color: active===item.id ? '#fff' : C.muted, textAlign:'center', whiteSpace:'pre', lineHeight:1.3 }}>{item.label}</div>
+            {item.badge && (
+              <div style={{ position:'absolute', top:8, right:10, width:16, height:16, borderRadius:'50%', background:C.blue, display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:700, color:'#fff' }}>{item.badge}</div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div style={{ padding:'10px 8px', borderTop:`1px solid ${C.border}` }}>
+        <div style={{ fontSize:8, color:C.dim, textAlign:'center', lineHeight:1.6 }}>26.4.0-b.4 ()</div>
+        <div style={{ fontSize:8, color:C.dim, textAlign:'center' }}>© Inèdit Software, S.L.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Mini line chart (SVG) ── */
+function MiniChart({ color, points, width=200, height=60 }) {
+  const maxY = Math.max(...points);
+  const minY = Math.min(...points);
+  const range = maxY - minY || 1;
+  const xs = points.map((_,i) => (i/(points.length-1))*(width-20)+10);
+  const ys = points.map(p => height - 10 - ((p-minY)/range)*(height-20));
+  const path = xs.map((x,i) => `${i===0?'M':'L'}${x},${ys[i]}`).join(' ');
+  // dot at last point
+  const lx = xs[xs.length-1], ly = ys[ys.length-1];
+  // x-axis dates
+  const dates = ['Mar 25','Mar 31','Apr 6','Apr 12','Apr 15'];
+  return (
+    <svg width={width} height={height+16} style={{ overflow:'visible' }}>
+      {/* grid lines */}
+      {[0,1,2,3].map(i => <line key={i} x1={10} x2={width-10} y1={10+i*(height-20)/3} y2={10+i*(height-20)/3} stroke="#2a2a2a" strokeWidth={1}/>)}
+      <path d={path} fill="none" stroke={color} strokeWidth={2}/>
+      <circle cx={lx} cy={ly} r={3} fill={color}/>
+      {/* x-axis labels */}
+      {dates.map((d,i) => <text key={i} x={(i/(dates.length-1))*(width-20)+10} y={height+14} fontSize={7} fill={C.dim} textAnchor="middle">{d}</text>)}
+    </svg>
+  );
+}
+
+/* ── Mini bar chart (ink) ── */
+function InkBarChart() {
+  const channels = [
+    { name:'Orange', val:2.8, color:'#ff8c00' },
+    { name:'Green',  val:2.2, color:'#00bb44' },
+    { name:'Black',  val:1.0, color:'#aaa' },
+    { name:'LightMagenta', val:0.3, color:'#e87abb' },
+  ];
+  const max = 3;
+  return (
+    <svg width={180} height={80}>
+      {channels.map((ch, i) => {
+        const y = i * 18 + 4;
+        const barW = (ch.val/max)*110;
+        return (
+          <g key={ch.name}>
+            <text x={0} y={y+10} fontSize={8} fill={C.muted}>{ch.name}</text>
+            <rect x={82} y={y+2} width={barW} height={10} rx={2} fill={ch.color}/>
+            <text x={82+barW+4} y={y+10} fontSize={8} fill={C.dim}>{ch.val}</text>
+          </g>
+        );
+      })}
+      {[0,1,2,3].map(n => <text key={n} x={82+n*(110/3)} y={78} fontSize={7} fill={C.dim} textAnchor="middle">{n}</text>)}
+    </svg>
+  );
+}
+
+/* ── KPI card ── */
+function KPICard({ icon, value, unit, label, points, style }) {
+  return (
+    <div style={{ background:C.panel, border:`1px solid ${C.border}`, borderRadius:4, padding:'14px 16px', display:'flex', flexDirection:'column', gap:4, ...style }}>
+      <div style={{ display:'flex', alignItems:'baseline', gap:6 }}>
+        <span style={{ fontSize:13, color:C.muted }}>{icon}</span>
+        <span style={{ fontSize:28, fontWeight:700, color:C.text, lineHeight:1 }}>{value}</span>
+        <span style={{ fontSize:18, fontWeight:600, color:C.text }}>{unit}</span>
+      </div>
+      <div style={{ fontSize:10, color:C.muted, marginBottom:8 }}>{label}</div>
+      <MiniChart color={C.orange} points={points} width={160} height={50}/>
+    </div>
+  );
+}
+
+/* ── Statistics screen ── */
+function StatisticsScreen() {
+  return (
+    <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <FilterBar dateRange="22/03/2026 ~ 20/04/2026"/>
+      <div style={{ flex:1, padding:'14px', overflow:'auto', display:'flex', gap:12 }}>
+        {/* Left: ink charts */}
+        <div style={{ width:220, display:'flex', flexDirection:'column', gap:12, flexShrink:0 }}>
+          <div style={{ background:C.panel, border:`1px solid ${C.border}`, borderRadius:4, padding:'12px 14px' }}>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:C.muted, marginBottom:10 }}>Total Inks</div>
+            <InkBarChart/>
+          </div>
+          {/* Legend */}
+          <div style={{ background:C.panel, border:`1px solid ${C.border}`, borderRadius:4, padding:'10px 14px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 10px' }}>
+              {[['Orange','#ff8c00'],['Cyan','#00ccff'],['LightCyan','#88ddff'],['Green','#00bb44'],['Violet','#9933cc'],['Yellow','#ffdd00'],['Black','#aaa'],['LightBlack','#555'],['Magenta','#ee3399'],['LightMagenta','#e87abb']].map(([n,c]) => (
+                <div key={n} style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  <div style={{ width:14, height:3, background:c, borderRadius:1 }}/>
+                  <span style={{ fontSize:8, color:C.muted }}>{n}</span>
+                </div>
+              ))}
+            </div>
+            <MiniChart color={C.orange} points={[0.1,0.3,0.8,1.8,0.6,0.2,0.9,1.2,0.4,0.1]} width={190} height={80}/>
+          </div>
+        </div>
+        {/* Right: KPI cards */}
+        <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, alignContent:'start' }}>
+          <KPICard icon="📄" value="4" unit="m" label="Material consumption" points={[0.5,0.8,1.2,2.0,1.5,2.5,3.0]}/>
+          <KPICard icon="⚡" value="9" unit="LM/h" label="Printing speed" points={[6,7,8,11,9,10,13]}/>
+          <KPICard icon="⏱" value="0.18" unit="%" label="Productivity" points={[0.5,1.0,1.5,2.0,2.2,2.5,3.0]}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Print history row ── */
+function HistoryRow({ ref_, printer, scheme, material, width, length, date, previewColor }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{ display:'grid', gridTemplateColumns:'64px 100px 1fr 1fr 1fr 56px 56px 140px 28px', alignItems:'center', padding:'8px 14px', borderBottom:`1px solid ${C.border}`, background:hov?C.rowHov:C.row, transition:'background 80ms', fontSize:11, color:C.text, gap:0 }}>
+      {/* preview thumbnail */}
+      <div style={{ width:48, height:28, background:previewColor||'#2a2a5a', borderRadius:2, border:'1px solid #333' }}/>
+      <div style={{ color:C.muted }}>{ref_}</div>
+      <div style={{ color:C.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', paddingRight:8 }}>{printer}</div>
+      <div style={{ color:C.muted, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', paddingRight:8 }}>{scheme}</div>
+      <div style={{ color:C.muted }}>{material}</div>
+      <div style={{ color:C.muted }}>{width}</div>
+      <div style={{ color:C.muted }}>{length}</div>
+      <div style={{ color:C.dim, fontSize:10 }}>{date}</div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <span style={{ fontSize:12, color:C.muted, cursor:'pointer' }}>ⓘ</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Printing History screen ── */
+function PrintingHistoryScreen() {
+  const jobs = [
+    { ref_:'452895', printer:'Epson SureColor SC-P9000 (Violet)', scheme:'PPM140matt_720_Et', material:'PPM140matt', width:'0.50 m', length:'0.30 m', date:'08/04/2026 15:10:10', previewColor:'#2a2a6a' },
+    { ref_:'449890', printer:'Epson SureColor SC-P9000 (Violet)', scheme:'PPM140matt_720_Et', material:'PPM140matt', width:'0.50 m', length:'0.20 m', date:'25/03/2026 10:17:48', previewColor:'#2a2a6a' },
+    { ref_:'448889', printer:'Epson SureColor SC-P9000 (Violet)', scheme:'PPM140matt_720_Et', material:'PPM140matt', width:'0.44 m', length:'1.30 m', date:'19/03/2026 15:00:45', previewColor:'#a0601a' },
+    { ref_:'447201', printer:'Epson SureColor SC-P9000 (Violet)', scheme:'PPM140matt_720_Et', material:'PPM140matt', width:'0.62 m', length:'0.85 m', date:'14/03/2026 09:22:11', previewColor:'#1a5a2a' },
+    { ref_:'445033', printer:'MS JP4 EVO', scheme:'Polyester_CMYK_v4', material:'PolySatin', width:'1.80 m', length:'2.40 m', date:'10/03/2026 14:55:30', previewColor:'#5a1a1a' },
+  ];
+
+  return (
+    <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      {/* filter bar */}
+      <div style={{ height:44, background:C.filter, borderBottom:`1px solid ${C.border}`, display:'flex', alignItems:'center', gap:8, padding:'0 14px', flexShrink:0 }}>
+        <Chip label="All printers (18)  Any workstation"/>
+        <Chip label="All schemes (20)"/>
+        <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:6, background:'#2a2a2a', border:`1px solid ${C.border2}`, borderRadius:3, padding:'0 10px', height:28 }}>
+            <span style={{ fontSize:11, color:C.text }}>19/03/2026 ~ 17/04/2026</span>
+            <span style={{ fontSize:11, color:C.muted }}>📅</span>
+          </div>
+        </div>
+      </div>
+      {/* toolbar */}
+      <div style={{ padding:'10px 14px', display:'flex', alignItems:'center', gap:12, borderBottom:`1px solid ${C.border}`, background:C.bg, flexShrink:0 }}>
+        <span style={{ fontSize:12, color:C.text, fontWeight:600 }}>8 Jobs</span>
+        <div style={{ marginLeft:'auto', display:'flex', gap:8, alignItems:'center' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:6, background:'#2a2a2a', border:`1px solid ${C.border2}`, borderRadius:3, padding:'0 10px', height:28 }}>
+            <span style={{ fontSize:10, color:C.dim }}>≡</span>
+            <span style={{ fontSize:11, color:C.muted, marginLeft:4 }}>Search by Name or Reference...</span>
+          </div>
+          <button style={{ fontFamily:'inherit', fontSize:11, fontWeight:700, padding:'0 14px', height:28, borderRadius:3, border:'none', background:C.blue, color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
+            <span>∨</span> Export
+          </button>
+        </div>
+      </div>
+      {/* table header */}
+      <div style={{ display:'grid', gridTemplateColumns:'64px 100px 1fr 1fr 1fr 56px 56px 140px 28px', padding:'8px 14px', borderBottom:`1px solid ${C.border}`, background:'#151515', fontSize:11, fontWeight:700, color:C.muted, gap:0, flexShrink:0 }}>
+        {['Preview','Reference','Printer','Scheme','Material','Width','Length','Date',''].map((h,i) => <div key={i}>{h}</div>)}
+      </div>
+      {/* rows */}
+      <div style={{ flex:1, overflowY:'auto' }}>
+        {jobs.map(j => <HistoryRow key={j.ref_} {...j}/>)}
+      </div>
+      {/* pagination */}
+      <div style={{ padding:'10px 14px', borderTop:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'#151515', flexShrink:0 }}>
+        {['«','‹','1','2','›','»'].map((p,i) => (
+          <div key={i} style={{ width:24, height:24, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:3, background:p==='2'?C.blue:'transparent', border:p==='2'?'none':`1px solid ${C.border}`, fontSize:11, color:p==='2'?'#fff':C.muted, cursor:'pointer' }}>{p}</div>
+        ))}
+        <span style={{ fontSize:10, color:C.dim, marginLeft:8 }}>Showing 6 to 8 of 8 entries</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── App ── */
+function App() {
+  const saved = localStorage.getItem('ns_cc_view') || 'statistics';
+  const [view, setView] = useState(saved);
+  const onNav = v => { setView(v); localStorage.setItem('ns_cc_view', v); };
+
+  const screenNames = { statistics:'Statistics', history:'Printing History', queues:'Print Server Queues', preferences:'Preferences', showroom:'Showroom' };
+
+  return (
+    <div style={{ display:'flex', height:'100vh', flexDirection:'column', overflow:'hidden' }}>
+      <TitleBar screen={screenNames[view]||view}/>
+      <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
+        <Sidebar active={view} onNav={onNav}/>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', background:C.bg }}>
+          {view==='statistics' && <StatisticsScreen/>}
+          {view==='history'    && <PrintingHistoryScreen/>}
+          {!['statistics','history'].includes(view) && (
+            <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:8 }}>
+              <div style={{ fontSize:24, color:C.dim }}>{navItems.find(n=>n.id===view)?.icon}</div>
+              <div style={{ fontSize:13, color:C.muted }}>{screenNames[view]} — placeholder screen</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
