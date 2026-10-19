@@ -2,10 +2,8 @@
 
 Espejo de solo lectura de la colección `ideas` de la Command Station (`https://claude.ai/artifact/GcprRC86Vef6t6UApE7evC`). Generado por `/sync`; no editar a mano.
 
-Última sincronización: 2026-10-19 (`inedit-os-pack@c219545`).
+Última sincronización: 2026-10-19 (`inedit-os-pack@adb7d89`).
 
-- **2026-10-14 (21:33)** · Instagram y Facebook · neoStampa — ColorChart Meta English
-- **2026-10-14 (21:53)** · Instagram y Facebook · neoStampa — nS Rip Software subli Meta English
 - **2026-10-14 (20:27)** · LinkedIn · neoStampa — PrintAndCut Meta English
 
   Print. Cut. Done. ✂️
@@ -23,3 +21,5 @@ Espejo de solo lectura de la colección `ideas` de la Command Station (`https://
   Fewer manual steps between printing and cutting. One workflow instead of two.
 
   #neoStampa #DTF #DigitalTextilePrinting #ContourCutting #Inedit
+- **2026-10-14 (21:33)** · Instagram y Facebook · neoStampa — ColorChart Meta English
+- **2026-10-14 (21:53)** · Instagram y Facebook · neoStampa — nS Rip Software subli Meta English

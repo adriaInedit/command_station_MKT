@@ -2,7 +2,7 @@
 
 Espejo de solo lectura de la colección `items` de la Command Station (`https://claude.ai/artifact/GcprRC86Vef6t6UApE7evC`). Generado por `/sync`; no editar a mano — los cambios se hacen en la Command Station y se reflejan en la próxima ejecución de `/sync`.
 
-Última sincronización: 2026-10-19 (`inedit-os-pack@c219545`).
+Última sincronización: 2026-10-19 (`inedit-os-pack@adb7d89`).
 
 | Fecha | Canal | Producto | Estado | Título | Canva |
 |---|---|---|---|---|---|
@@ -12,12 +12,12 @@ Espejo de solo lectura de la colección `items` de la Command Station (`https://
 | 2026-10-16 | LinkedIn | neoStampa | Publicado | Entrevista albert | — |
 | 2026-10-19 | Instagram y Facebook | neoTextil | En revisión | 1 diseño, 6 colorways | — |
 | 2026-10-20 | Instagram y Facebook | neoStampa | En revisión | PrintAndCut Meta English | — |
-| 2026-10-21 | LinkedIn | Inèdit | Borrador | Por qué el mismo diseño sale con colores distintos en dos impresoras | — |
+| 2026-10-21 | LinkedIn | Inèdit | En revisión | Sublimación, DTG, DTF o direct-to-fabric: qué técnica para cada tejido | — |
 | 2026-10-22 | LinkedIn | neoStampa | En revisión | Entrevista Lv (Dupont) | — |
 | 2026-10-23 | Instagram y Facebook | neoCatalog | Idea | Prueba visual neoCatalog | — |
 | 2026-10-26 | Instagram y Facebook | neoStampa | En revisión | Entrevista Lv (Dupont) | — |
 | 2026-10-27 | LinkedIn | neoStampa | En revisión | neoStampa_Print_Server | — |
-| 2026-10-28 | LinkedIn | Inèdit | Borrador | Sublimación, DTG, DTF o direct-to-fabric: qué técnica para cada tejido | — |
+| 2026-10-28 | LinkedIn | neoStampa | Idea | Mito o realidad: para imprimir hay que diseñar en CMYK. | — |
 | 2026-10-29 | LinkedIn | neoStampa | Idea | Stands peru | — |
 | 2026-10-29 | LinkedIn | Inèdit | Idea | TBT evento Anterior (ITMA) | — |
 | 2026-10-30 | Instagram y Facebook | Inèdit | Idea | Conoce a (Comercial) | — |
