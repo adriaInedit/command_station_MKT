@@ -9,7 +9,7 @@
 
 ## Flags Carried Over from Source
 
-- Do NOT use the "up to 5x faster PDF engine" claim in any post until engineering confirms the benchmark (flagged [NEEDS REAL DATA] in source).
+- Do NOT use the "up to 5x faster PDF engine" claim in any post until engineering confirms the benchmark (pending engineering confirmation).
 - No release date confirmed — all posts use "coming soon" / "what's next" framing.
 - Fluorescent ink hardware/substrate scope not yet confirmed — posts reference fluorescent ink support without specifying which hardware it covers, consistent with what the source document supports.
 

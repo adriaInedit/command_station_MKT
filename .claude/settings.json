@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard_write.py mirror"
+          },
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard_write.py outputs"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -36,14 +36,17 @@ Sube el texto de cada artículo de la documentación oficial para que la Command
 
 ## 3. Bajar — Command Station → `12-command-station/`
 
+**No uses Write/Edit/MultiEdit sobre ningún archivo dentro de `12-command-station/`** — un hook (`.claude/hooks/guard_write.py`, modo `mirror`) bloquea esas escrituras a propósito para impedir ediciones a mano. La única vía sancionada es `.claude/scripts/write_mirror_file.py`, invocado por `Bash` (el hook solo intercepta Write/Edit/MultiEdit, no Bash): genera cada archivo en tu scratchpad y luego cópialo con `python3 .claude/scripts/write_mirror_file.py <ruta destino en 12-command-station/> <archivo temporal>`, o bórralo con `python3 .claude/scripts/write_mirror_file.py --delete <ruta destino>`.
+
 1. Lee con `read_db`, `db_op` "query" (con `out_dir` apuntando a tu scratchpad) las colecciones `items`, `ideas` y `releases`. Pagina con `query.cursor` si hay `next_cursor`.
-2. Genera/sobrescribe `12-command-station/calendar.md`: tabla con columnas `Fecha | Canal | Producto | Estado | Título | Canva`, ordenada por `date` ascendente; los items sin `date` van en una sección final "Sin fecha". Usa estos nombres legibles (no los ids crudos):
+2. Genera en tu scratchpad el contenido de `calendar.md`: tabla con columnas `Fecha | Canal | Producto | Estado | Título | Canva`, ordenada por `date` ascendente; los items sin `date` van en una sección final "Sin fecha". Usa estos nombres legibles (no los ids crudos):
    - Canal: linkedin→LinkedIn, meta→Instagram y Facebook, newsletter→Newsletter, emailing→Emailing, ferias→Ferias, webinars→Webinars, website→Website, youtube→YouTube.
    - Producto: inedit→Inèdit, neostampa→neoStampa, neotextil→neoTextil, neocatalog→neoCatalog, neomatch→neoMatch.
    - Estado: idea→Idea, borrador→Borrador, revision→En revisión, aprobado→Aprobado, publicado→Publicado.
    - Columna Canva: si el item tiene `canvaUrl`, enlázalo como `[Abrir en Canva](<url>)`; si no, `—`.
-3. Genera/sobrescribe `12-command-station/ideas.md`: una lista con viñetas, una por idea, con fecha (`createdAt`), canal y producto (nombres legibles como arriba) y el texto completo de la idea.
-4. Genera `12-command-station/releases/<producto>-<version>.json`: un archivo por documento de `releases`, con el producto en minúsculas y la versión tal cual (p. ej. `neostampa-26.9.json`), conteniendo el documento completo tal como lo devuelve `read_db` (incluyendo su `id`). Borra de esa carpeta los archivos de versiones que ya no existan en la colección.
+   Luego cópialo a `12-command-station/calendar.md` con `write_mirror_file.py` (sobrescribe siempre entero).
+3. Igual para `ideas.md`: genera en el scratchpad una lista con viñetas, una por idea, con fecha (`createdAt`), canal y producto (nombres legibles como arriba) y el texto completo de la idea, y cópiala a `12-command-station/ideas.md` con `write_mirror_file.py`.
+4. Para `releases/<producto>-<version>.json`: un archivo por documento de `releases`, con el producto en minúsculas y la versión tal cual (p. ej. `neostampa-26.9.json`), conteniendo el documento completo tal como lo devuelve `read_db` (incluyendo su `id`) — genera cada uno en el scratchpad y cópialo con `write_mirror_file.py`. Borra con `write_mirror_file.py --delete <ruta>` los archivos de versiones que ya no existan en la colección.
 5. No escribas nada de vuelta en `items`, `ideas`, `releases` ni `library` — esta dirección es solo lectura.
 
 ## 4. Exportar a OneDrive
@@ -52,12 +55,14 @@ Tras completar las secciones 1–3, ejecuta `/onedrive` para que la copia en One
 
 ## 5. Copia de seguridad del código de la Command Station
 
+`command-station/station.html` no está dentro de `12-command-station/` y el hook de protección (modo `mirror`) no lo bloquea — puedes escribirlo con Write normalmente.
+
 1. Lee la Command Station con la herramienta Artifact, acción `read`, sobre `https://claude.ai/artifact/GcprRC86Vef6t6UApE7evC` (esto guarda el HTML completo en un archivo local; la salida de la herramienta te da su ruta).
-2. Compara ese HTML con `12-command-station/station.html` tal como está ahora en el repo (si el archivo no existe todavía, trátalo como "ha cambiado").
-3. Si es distinto (o no existía): sobrescribe `12-command-station/station.html` con el HTML leído, `git add 12-command-station/station.html` y comita **en un commit aparte** (no lo mezcles con el commit de la sección 6) con el mensaje exacto `Command Station: copia de seguridad del código`.
+2. Compara ese HTML con `command-station/station.html` tal como está ahora en el repo (si el archivo no existe todavía, trátalo como "ha cambiado").
+3. Si es distinto (o no existía): sobrescribe `command-station/station.html` con el HTML leído, `git add command-station/station.html` y comita **en un commit aparte** (no lo mezcles con el commit de la sección 6) con el mensaje exacto `Command Station: copia de seguridad del código`.
 4. Si es idéntico: no hagas commit ni toques el archivo; anótalo como "sin cambios" para el informe.
 
-Este paso es solo una copia de seguridad del código fuente de la Command Station (para poder recuperarlo si algo lo rompe) — no lo confundas con `12-command-station/calendar.md`/`ideas.md`/`releases/`, que son los datos (sección 3), ni con el conocimiento que sube en la sección 1.
+Este paso es solo una copia de seguridad del código fuente de la Command Station (para poder recuperarlo si algo lo rompe) — no lo confundas con `12-command-station/calendar.md`/`ideas.md`/`releases/`, que son los datos (sección 3), ni con el conocimiento que sube en la sección 1. `command-station/README.md` documenta esta misma regla.
 
 ## 6. Importar — OneDrive → colección `metrics` (LinkedIn y Facebook)
 
@@ -73,7 +78,7 @@ Importa a la Command Station las estadísticas que el usuario exporta manualment
 
 ## 7. Cerrar
 
-1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/calendar.md 12-command-station/ideas.md 12-command-station/releases/` (solo lo que de verdad cambió; `station.html` ya se comitea aparte en la sección 5) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo. (La sección 6 no deja archivos de repo que comitear: `metrics` vive solo en la Command Station y los archivos movidos viven en OneDrive, no en el repo.)
+1. `git add CLAUDE.md 00-strategy/decision-log.md 12-command-station/calendar.md 12-command-station/ideas.md 12-command-station/releases/` (solo lo que de verdad cambió; `command-station/station.html` ya se comitea aparte en la sección 5) y comita con el mensaje `sync: Command Station` (o uno más específico si ayuda, pero debe empezar por `sync: Command Station`). Si no hay cambios en ningún sentido, no crees un commit vacío — dilo. (La sección 6 no deja archivos de repo que comitear: `metrics` vive solo en la Command Station y los archivos movidos viven en OneDrive, no en el repo.)
 2. Responde en español, en cinco bloques claros:
    - **Subido (conocimiento):** si `kb`/`rules` cambiaron respecto a la versión leída en el paso 1.4 (y en qué, a grandes rasgos), o si no había cambios.
    - **Subido (documentación):** cuántos artículos se escribieron en `docs`, desglosados por producto/sección, cuántos se borraron (si alguno dejó de estar en el índice), y el total resultante guardado en `docsCount`.
